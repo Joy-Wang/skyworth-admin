@@ -2,7 +2,7 @@
   "name": "vue-manage-system",
   "version": "3.1.0",
   "description": "基于Vue.js 2.x系列 + element-ui 内容管理系统解决方案",
-  "author": "<2981207131@qq.com>",
+  "author": "joy<645153050@qq.com>",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
