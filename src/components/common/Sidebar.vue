@@ -36,6 +36,26 @@
                         title: '系统首页'
                     },
                     {
+                        icon: 'el-icon-service',
+                        index: 'user',
+                        title: '用户'
+                    },
+                    {
+                        icon: 'el-icon-mobile-phone',
+                        index: 'device',
+                        title: '设备'
+                    },
+                    {
+                        icon: 'el-icon-edit-outline',
+                        index: 'project',
+                        title: '方案'
+                    },
+                    {
+                        icon: 'el-icon-picture',
+                        index: 'tabs',
+                        title: '素材'
+                    },
+                    {
                         icon: 'el-icon-tickets',
                         index: 'table',
                         title: '基础表格'

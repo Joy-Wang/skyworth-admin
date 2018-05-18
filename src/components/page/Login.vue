@@ -1,18 +1,21 @@
 <template>
     <div class="login-wrap">
-        <div class="ms-title">后台管理系统</div>
+        <div class="ms-title">SkyWorth海外智能后台</div>
         <div class="ms-login">
             <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="0px" class="demo-ruleForm">
                 <el-form-item prop="username">
-                    <el-input v-model="ruleForm.username" placeholder="username"></el-input>
+                    <el-input v-model="ruleForm.username" placeholder="账号"></el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                    <el-input type="password" placeholder="password" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')"></el-input>
+                    <el-input type="password" placeholder="密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')"></el-input>
                 </el-form-item>
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
                 </div>
-                <p style="font-size:12px;line-height:30px;color:#999;">Tips : 用户名和密码随便填。</p>
+                <div class="sky-operate">
+                    <a class='register'>注册</a>
+                    <a class='forget'>忘记密码</a>
+                </div>
             </el-form>
         </div>
     </div>
@@ -23,8 +26,8 @@
         data: function(){
             return {
                 ruleForm: {
-                    username: 'admin',
-                    password: '123123'
+                    username: '',
+                    password: ''
                 },
                 rules: {
                     username: [
@@ -38,10 +41,19 @@
         },
         methods: {
             submitForm(formName) {
+                let self = this
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        localStorage.setItem('ms_username',this.ruleForm.username);
-                        this.$router.push('/');
+                        if (self.ruleForm.username === 'admin' && self.ruleForm.password === 'admin') {
+                            localStorage.setItem('ms_username',self.ruleForm.username);
+                            self.$router.push('/');
+                        } else {
+                            self.$message({
+                                message: '账号或密码错误，请重新输入',
+                                type: 'error',
+                                center: true
+                            })
+                        }
                     } else {
                         console.log('error submit!!');
                         return false;
@@ -52,11 +64,12 @@
     }
 </script>
 
-<style scoped>
+<style scoped lang='scss'>
     .login-wrap{
         position: relative;
         width:100%;
         height:100%;
+        background: url('../../../static/img/bg.jpg') 100% 100% no-repeat;
     }
     .ms-title{
         position: absolute;
@@ -85,5 +98,19 @@
     .login-btn button{
         width:100%;
         height:36px;
+    }
+    .sky-operate{
+        width: 100%;
+        overflow: hidden;
+        .register,.forget{
+            font-size:12px;
+            line-height:40px;
+            color:#4a9aea;
+            cursor: pointer;
+            float: left;
+        }
+        .forget{
+            float: right;
+        }
     }
 </style>

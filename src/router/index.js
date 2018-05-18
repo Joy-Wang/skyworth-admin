@@ -20,6 +20,21 @@ export default new Router({
                     meta: { title: '系统首页' }
                 },
                 {
+                    path: '/user',
+                    component: resolve => require(['../components/page/user/user-center.vue'], resolve),
+                    meta: { title: '用户' }
+                },
+                {
+                    path: '/device',
+                    component: resolve => require(['../components/page/device/device-home.vue'], resolve),
+                    meta: { title: '设备' }
+                },
+                {
+                    path: '/project',
+                    component: resolve => require(['../components/page/project/project-home.vue'], resolve),
+                    meta: { title: '方案' }
+                },
+                {
                     path: '/table',
                     component: resolve => require(['../components/page/BaseTable.vue'], resolve),
                     meta: { title: '基础表格' }

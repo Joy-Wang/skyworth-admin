@@ -1,1 +1,1 @@
-本系统在 lin-xin/vue-manage-system 的基础上修改，若要原系统请前往https://github.com/lin-xin/vue-manage-system获取，请尊重原著
+本系统在 lin-xin/vue-manage-system 的基础上修改，获取请尊重原著,若要原系统请前往https://github.com/lin-xin/vue-manage-system
