@@ -6,7 +6,7 @@
                     <el-col>
                         <el-card shadow="hover" class="mgb20">
                             <div class="user-info">
-                                <img src="static/img/img.jpg" class="user-avator" alt="">
+                                <img src="static/img/img.jpeg" class="user-avator" alt="">
                                 <div class="user-info-cont">
                                     <div class="user-info-name">{{name}}</div>
                                     <div>{{role}}</div>

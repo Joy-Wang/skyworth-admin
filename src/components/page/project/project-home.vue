@@ -1,428 +1,187 @@
 <template>
     <!-- 方案 -->
-    <div class="project-home"> 
+    <div class="project-home">
         <div class="container">
-            <div class="handle-box">
-                <el-button type="success" @click="1">保 存</el-button>
-                <el-button type="primary" @click="1">提 交</el-button>
-                <el-button type="danger" @click="1">删 除</el-button>
-            </div>
-            <div class="handle-box" style="margin: 0">
-                <el-form ref="form" :model="projectForm" label-width="73px">
-                    <el-row>
-                        <el-col :span="5">
-                            <el-form-item label="方案名称">
-                                <el-input v-model="projectForm.name"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="5">
-                            <el-form-item label="方案编码">
-                                <el-input v-model="projectForm.code"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form>
-            </div>
-            <el-table :data="tableData" border style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
-                <el-table-column prop="country" label="国家" width="120">
-                </el-table-column>
-                <el-table-column prop="language" label="语言" width="150">
-                </el-table-column>
-                <el-table-column prop="type1" label="机型" width="150">
-                </el-table-column>
-                <el-table-column prop="type2" label="机型" width="150">
-                </el-table-column>
-                <el-table-column prop="type2" label="备注" :formatter="formatter">
-                </el-table-column>
-            </el-table>
-            <div class="pagination">
-                <el-pagination @current-change="handleCurrentChange" layout="prev, pager, next" :total="1000">
-                </el-pagination>
-            </div>
-            <div class="handle-box">
-                <el-form ref="form" :model="form" label-width="80px">
-                    <el-row>
-                        <el-col :span="6">
-                            <el-form-item label="关联客户">
-                                <el-select v-model="form.type1" clearable placeholder="请选择客户">
-                                    <el-option
-                                    v-for="item in client"
-                                    :key="item.value"
-                                    :label="item.label"
-                                    :value="item.value">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="优先级">
-                                <el-select v-model="form.type2" clearable placeholder="请选择优先级">
-                                    <el-option
-                                    v-for="item in rank"
-                                    :key="item.value"
-                                    :label="item.label"
-                                    :value="item.value">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="版本">
-                                <el-select v-model="form.country" clearable placeholder="请选择版本">
-                                    <el-option
-                                    v-for="item in version"
-                                    :key="item.value"
-                                    :label="item.label"
-                                    :value="item.value">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form>
-            </div>
             <div>
-                <el-form ref="form" :model="form" label-width="80px">
-                    <el-row>
-                        <el-col :span="12">
-                            <el-form-item label="备注">
-                                <el-input
-                                type="textarea"
-                                :autosize="{ minRows: 2, maxRows: 4}"
-                                placeholder="请输入内容"
-                                v-model="textarea">
-                                </el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                </el-form>
-            </div>
-            <div>
-                <div class="drag-box">
-                    <div class="drag-box-item">
-                        <div class="item-title">todo</div>
-                        <draggable v-model="todo" @remove="removeHandle" :options="dragOptions">
-                            <transition-group tag="div" id="todo" class="item-ul">
-                                <div v-for="(item,index) in todo" class="drag-list" :key="index">
-                                    {{item.content}}
-                                </div>
-                            </transition-group>
-                        </draggable>
-                    </div>
-                    <div class="drag-box-item">
-                        <div class="item-title">doing</div>
-                        <draggable v-model="doing" @remove="removeHandle" :options="dragOptions">
-                            <transition-group tag="div" id="doing" class="item-ul">
-                                <div v-for="(item,index) in doing" class="drag-list" :key="index">
-                                    {{item.content}}
-                                </div>
-                            </transition-group>
-                        </draggable>
+                <div>
+                    <el-form label-width="40px">
+                        <el-row :gutter="20">
+                            <el-col :span="5">
+                                <el-form-item label="编码">
+                                    <el-input v-model="search.name" placeholder="请输入编码"></el-input>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="5">
+                                <el-form-item label="名称">
+                                    <el-autocomplete
+                                    popper-class="my-autocomplete"
+                                    v-model="state2"
+                                    :fetch-suggestions="querySearch"
+                                    placeholder="请输入名称"
+                                    @select="handleSelect">
+                                        <i
+                                            class="el-icon-edit el-input__icon"
+                                            slot="suffix"
+                                            @click="handleIconClick">
+                                        </i>
+                                        <template slot-scope="{ item }">
+                                            <div class="name">{{ item.value }}</div>
+                                        </template>
+                                    </el-autocomplete>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="5">
+                                <el-form-item label="客户">
+                                    <el-autocomplete
+                                    popper-class="my-autocomplete"
+                                    v-model="state3"
+                                    :fetch-suggestions="querySearch"
+                                    placeholder="请输入客户"
+                                    @select="handleSelect">
+                                        <i
+                                            class="el-icon-edit el-input__icon"
+                                            slot="suffix"
+                                            @click="handleIconClick">
+                                        </i>
+                                        <template slot-scope="{ item }">
+                                            <div class="name">{{ item.value }}</div>
+                                        </template>
+                                    </el-autocomplete>
+                                </el-form-item>
+                            </el-col>
+                            <el-col :span="5">
+                                <el-button type="primary" icon="search" @click="search()">查询</el-button>
+                                <el-button type="primary" icon="search" @click="addProject()">新增</el-button>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                </div>
+                <!-- 分页 -->
+                <div>
+                    <div class="block">
+                        <el-pagination class="page-box"
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                        :current-page="currentPage4"
+                        :page-sizes="[10, 20, 30, 40]"
+                        :page-size="10"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="40">
+                        </el-pagination>
                     </div>
                 </div>
             </div>
+            <!-- table -->
+            <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
+                <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
+                </el-table-column>
+                <el-table-column label="编码" width="200" header-align="center">
+                    <template slot-scope="scope">
+                        <a class="click-name" @click="manageProject(scope.row)">{{ scope.row.tose_code }}</a>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="tose_name" label="名称" width="200" header-align="center">
+                </el-table-column>
+                <el-table-column prop="client" label="客户" width="auto" header-align="center">
+                </el-table-column>
+                <el-table-column prop="tose_version" label="版本" width="100" header-align="center">
+                </el-table-column>
+                <el-table-column prop="tose_level" label="优先级" width="100" header-align="center">
+                </el-table-column>
+                <el-table-column label="状态" width="80" header-align="center" align="center">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.tose_status == 1" class="sky-blue">待提交</span>
+                        <span v-else-if="scope.row.tose_status == 2" class="sky-yellow">审核中</span>
+                        <span v-else-if="scope.row.tose_status == 3" class="sky-green">通过</span>
+                        <span v-else-if="scope.row.tose_status == 4" class="sky-red">不通过</span>
+                    </template>
+                </el-table-column>
+            </el-table>
         </div>
 
-        <!-- 设备查询框 -->
-        <el-dialog title="设备查询" :visible.sync="searchVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="30%">
-                <el-form-item label="名称">
-                    <el-input v-model="form.name"></el-input>
-                </el-form-item>
+        <!-- 方案管理框 -->
+        <el-dialog title="方案管理" :visible.sync="editVisible" width="30%">
+            <el-form ref="ruleForm" label-width="80px" class="demo-ruleForm">
                 <el-form-item label="编码">
-                    <el-input v-model="form.num"></el-input>
+                    <el-input v-model="projectEditData.tose_code" placeholder="请填写编码" disabled></el-input>
                 </el-form-item>
-                <el-form-item label="机型">
-                    <el-input v-model="form.type1"></el-input>
+                <el-form-item label="账号">
+                    <el-input v-model="projectEditData.tose_name" placeholder="请填写名称" disabled></el-input>
                 </el-form-item>
-                <el-form-item label="机芯">
-                    <el-input v-model="form.type2"></el-input>
+                <el-form-item label="关联客户">
+                    <el-autocomplete
+                    popper-class="my-autocomplete"
+                    v-model="state3"
+                    :fetch-suggestions="querySearch"
+                    placeholder="请输入客户"
+                    @select="handleSelect">
+                        <i
+                            class="el-icon-edit el-input__icon"
+                            slot="suffix"
+                            @click="handleIconClick">
+                        </i>
+                        <template slot-scope="{ item }">
+                            <div class="name">{{ item.value }}</div>
+                        </template>
+                    </el-autocomplete>
                 </el-form-item>
-                <el-form-item label="使用国家">
-                    <el-input v-model="form.country"></el-input>
+                <el-form-item label="优先级">
+                    <el-input v-model="projectEditData.tose_level" placeholder="请填写优先级"></el-input>
                 </el-form-item>
-                <el-form-item label="主题">
-                    <el-input v-model="form.theme"></el-input>
+                <el-form-item label="版本">
+                    <el-input v-model="projectEditData.tose_version" placeholder="请填写优版本"></el-input>
                 </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="searchVisible = false">取 消</el-button>
-                <el-button type="primary" @click="searchVisible = false">确 定</el-button>
-            </span>
-        </el-dialog>
-
-        <!-- 设备管理框 -->
-        <el-dialog title="设备管理" :visible.sync="manageDeviceVisible" width="50%">
-            <el-form ref="form" :model="form" label-width="80px">
-                <el-row>
-                    <el-col :span="8">
-                        <el-form-item label="名称">
-                            <el-input v-model="form.name"></el-input>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="编码">
-                            <el-input v-model="form.num"></el-input>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8"></el-col>
-                </el-row>
-                <el-row>
-                    <el-col :span="8">
-                        <el-form-item label="机型">
-                            <el-select v-model="form.type1" clearable placeholder="请选择机型">
-                                <el-option
-                                v-for="item in DeviceType1"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="机芯">
-                            <el-select v-model="form.type2" clearable placeholder="请选择机芯">
-                                <el-option
-                                v-for="item in DeviceType2"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="使用国家">
-                            <el-select v-model="form.country" clearable placeholder="请选择国家">
-                                <el-option
-                                v-for="item in DeviceCountry"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-form-item label="备注">
-                    <el-input type="textarea"
-                        :rows="2"
-                        placeholder="请输入内容"
-                        v-model="form.notes">
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="主题">
-                    <el-input v-model="form.theme"></el-input>
+                <el-form-item label="状态">
+                    <el-radio v-model="projectEditData.radio" label="1">启用</el-radio>
+                    <el-radio v-model="projectEditData.radio" label="2">停用</el-radio>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="manageDeviceVisible = false">取 消</el-button>
-                <el-button type="danger" @click="manageDeviceVisible = false">删 除</el-button>
-                <el-button type="primary" @click="manageDeviceVisible = false">确 定</el-button>
+                <el-button type="danger" @click="editVisible = false">删 除</el-button>
+                <el-button type="primary" @click="editVisible = false">提 交</el-button>
             </span>
         </el-dialog>
     </div>
 </template>
 
 <script>
-    import draggable from 'vuedraggable'
     export default {
         data() {
             return {
                 url: './static/vuetable.json',
                 tableData: [],
-                projectForm: {
-                    name: '',
-                    code: ''
-                },
-                textarea: '',
                 cur_page: 1,
                 multipleSelection: [],
                 select_cate: '',
                 select_word: '',
                 del_list: [],
                 searchVisible: false,
-                manageDeviceVisible: false,
+                editVisible: false,
                 delVisible: false,
-                form: {
-                    name: '',
-                    num: '',
-                    type1: '',
-                    type2: '',
-                    country: '',
-                    theme: '',
-                    notes: ''
+                projectEditData: {
+                    tose_name: '',
+                    tose_code: '',
+                    client: '',
+                    tose_level: '',
+                    status: '',
+                    radio: '',
+                    tose_version: ''
                 },
-                DeviceType1: [ // 机型
-                    {
-                        value: '1',
-                        label: 'U1'
-                    }, 
-                    {
-                        value: '2',
-                        label: 'U2'
-                    }, 
-                    {
-                        value: '3',
-                        label: 'U3'
-                    }, 
-                    {
-                        value: '4',
-                        label: 'U4'
-                    }, 
-                    {
-                        value: '5',
-                        label: 'U5'
-                    }
-                ],
-                DeviceType2: [ // 机芯
-                    {
-                        value: '1',
-                        label: 'U7583'
-                    }, 
-                    {
-                        value: '2',
-                        label: '67SHI'
-                    }, 
-                    {
-                        value: '3',
-                        label: 'BANHA'
-                    }, 
-                    {
-                        value: '4',
-                        label: 'SJK34'
-                    }, 
-                    {
-                        value: '5',
-                        label: 'VMLKSH'
-                    }
-                ],
-                DeviceCountry: [ // 国家
-                    {
-                        value: '1',
-                        label: '印度'
-                    }, 
-                    {
-                        value: '2',
-                        label: '埃及'
-                    }, 
-                    {
-                        value: '3',
-                        label: '阿富汗'
-                    }, 
-                    {
-                        value: '4',
-                        label: '南非'
-                    }, 
-                    {
-                        value: '5',
-                        label: '巴基斯坦'
-                    }
-                ],
-                client: [
-                    {
-                        value: '1',
-                        label: '印度'
-                    },
-                    {
-                        value: '2',
-                        label: '泰国'
-                    },
-                    {
-                        value: '3',
-                        label: '韩国'
-                    },
-                    {
-                        value: '4',
-                        label: '美国'
-                    }
-                ],
-                rank: [
-                    {
-                        value: '100',
-                        label: '100'
-                    },
-                    {
-                        value: '1000',
-                        label: '1000'
-                    },
-                    {
-                        value: '5000',
-                        label: '5000'
-                    },
-                    {
-                        value: '10000',
-                        label: '10000'
-                    },
-                    {
-                        value: '50000',
-                        label: '50000'
-                    },
-                    {
-                        value: '9999999',
-                        label: '9999999'
-                    }
-                ],
-                version: [
-                    {
-                        value: '1',
-                        label: '1.0'
-                    },
-                    {
-                        value: '1.1',
-                        label: '1.1'
-                    },
-                    {
-                        value: '2.0',
-                        label: '2.0'
-                    }
-                ],
-                dragOptions:{
-                    animation: 120,
-                    scroll: true,
-                    group: 'sortlist',
-                    ghostClass: 'ghost-style'
+                search: {
+                    name: ''
                 },
-                todo: [
-                    {
-                        content: 'a1'
-                    },
-                    {
-                        content: 'a2'
-                    },
-                    {
-                        content: 'a3'
-                    }
-                ],
-                doing: [
-                    {
-                        content: 'b1'
-                    },
-                    {
-                        content: 'b2'
-                    },
-                    {
-                        content: 'b3'
-                    },
-                    {
-                        content: 'b4'
-                    },
-                    {
-                        content: 'b5'
-                    },
-                    {
-                        content: 'b6'
-                    }
-                ],
+                state1: '',
+                state2: '',
+                state3: '',
+                radio: '1',
                 idx: -1
             }
         },
-        components:{
-            draggable
-        },
         created() {
             this.getData();
+        },
+        mounted () {
+            this.restaurants = this.loadAll();
         },
         computed: {
             data() {
@@ -464,19 +223,60 @@
                     this.tableData = res.data.projectList;
                 })
             },
-            // 拖拽钩子
-            removeHandle(event){
-                console.log(event);
-                this.$message.success(`从 ${event.from.id} 移动到 ${event.to.id} `);
-            },
-            // 设备查询框
+            // 查询
             search () {
-                this.searchVisible = true;
+    
             },
-            // 设备新增
-            manageDevice () {
-                this.manageDeviceVisible = true;
+            // 修改框
+            manageProject (date) {
+                this.editVisible = true;
+                this.projectEditData = date
+                this.projectEditData.radio = date.status
             },
+            // 模糊搜索
+            querySearch(queryString, cb) {
+                var restaurants = this.restaurants;
+                var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+                // 调用 callback 返回建议列表的数据
+                cb(results);
+            },
+            // 清楚筛选
+            createFilter(queryString) {
+                return (restaurant) => {
+                return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                };
+            },
+            // 加载数据
+            loadAll() {
+                return [
+                { "value": "林丽" },
+                { "value": "张三" },
+                { "value": "王麻子" },
+                { "value": "刘武" },
+                { "value": "胡德" },
+                { "value": "欧阳吉吉" },
+                { "value": "姑苏慕容复" },
+                { "value": "王语嫣" },
+                { "value": "小飞鼠" },
+                { "value": "大胖" },
+                { "value": "孟峰" },
+                { "value": "吴彦祖" },
+                { "value": "林丹" },
+                { "value": "陈冠希" },
+                { "value": "周杰伦" }
+                ];
+            },
+            handleSelect(item) {
+                console.log(item);
+            },
+            handleIconClick(ev) {
+                console.log(ev);
+            },
+            // 新增方案
+            addProject () {
+                this.$router.push({name: 'projectAdd'});
+            },
+            // 备注
             formatter(row, column) {
                 return row.address;
             },
@@ -527,7 +327,7 @@
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
     .handle-box {
         margin-bottom: 20px;
     }
@@ -544,63 +344,8 @@
         font-size: 16px;
         text-align: center
     }
-    .drag-box{
-        /* display: flex; */
-        user-select: none;
-    }
-    .drag-box-item {
-        /* flex: 1; */
-        width: 100%;
-        min-width: 300px;
-        background-color: #eff1f5;
-        margin-right: 16px;
-        border-radius: 6px;
-        border: 1px #e1e4e8 solid;
-    }
-    .item-title{
-        padding: 8px 8px 8px 12px;
-        font-size: 14px;
-        line-height: 1.5;
-        color: #24292e;
-        font-weight: 600;
-    }
-    .item-ul{
-        padding: 0 8px 8px;
-        height: 200px;
-        overflow-x: scroll;
-        overflow-y: scroll;
-    }
-    .item-ul::-webkit-scrollbar{
-        width: 0;
-    }
-    .drag-list {
-        border: 1px #e1e4e8 solid;
-        padding: 10px;
-        margin: 0 5px;
-        list-style: none;
-        background-color: #fff;
-        border-radius: 6px;
-        cursor: pointer;
-        -webkit-transition: border .3s ease-in;
-        transition: border .3s ease-in;
-        width: 100px;
-        height: 150px;
-        float: left;
-        display: inline-block;
-    }
-    .drag-list:hover {
-        border: 1px solid #20a0ff;
-    }
-    .drag-title {
-        font-weight: 400;
-        line-height: 25px;
-        margin: 10px 0;
-        font-size: 22px;
-        color: #1f2f3d;
-    }
-    .ghost-style{
-        display: block;
-        color: transparent;
-        border-style: dashed
+    .page-box{
+        text-align: right;
+        margin-bottom: 10px;
     }
 </style>

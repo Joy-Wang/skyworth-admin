@@ -38,22 +38,31 @@
                     {
                         icon: 'el-icon-service',
                         index: 'user',
-                        title: '用户'
+                        title: '用户管理'
                     },
                     {
                         icon: 'el-icon-mobile-phone',
-                        index: 'device',
-                        title: '设备'
+                        title: '平台管理',
+                        subs: [
+                            {
+                                index: 'device',
+                                title: '设备'
+                            },
+                            {
+                                index: 'baseInfo',
+                                title: '基础信息'
+                            }
+                        ]
                     },
                     {
                         icon: 'el-icon-edit-outline',
                         index: 'project',
-                        title: '方案'
+                        title: '方案管理'
                     },
                     {
                         icon: 'el-icon-picture',
                         index: 'tabs',
-                        title: '素材'
+                        title: '素材管理'
                     },
                     {
                         icon: 'el-icon-tickets',

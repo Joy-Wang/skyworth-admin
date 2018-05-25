@@ -167,3 +167,36 @@ a {
 .v-note-wrapper .v-note-panel {
     min-height: 500px;
 }
+
+/* 修改table head */
+.el-table thead{
+    font-weight: bold;
+    color: #606266;
+}
+.el-table thead tr,.el-table thead th{
+    background-color: #cdd1dd;
+}
+.el-dialog .el-dialog__body{
+    max-height: 40vh;
+    overflow-y: scroll;
+}
+
+.click-name{
+    cursor: pointer;
+    color: #409EFF;
+    text-decoration: underline;
+}
+
+/* 状态颜色 */
+.sky-green{
+    color: #67c23a;
+}
+.sky-blue{
+    color: #409EFF;
+}
+.sky-red{
+    color: #f56c6c;
+}
+.sky-yellow{
+    color: #e6a23c;
+}

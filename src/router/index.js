@@ -15,24 +15,46 @@ export default new Router({
             meta: { title: '自述文件' },
             children:[
                 {
+                    // 系统首页
+                    name: 'dashboard',
                     path: '/dashboard',
                     component: resolve => require(['../components/page/Dashboard.vue'], resolve),
                     meta: { title: '系统首页' }
                 },
                 {
+                    // 用户中心
+                    name: 'user',
                     path: '/user',
                     component: resolve => require(['../components/page/user/user-center.vue'], resolve),
                     meta: { title: '用户' }
                 },
                 {
+                    // 基础信息管理
+                    name: 'baseInfo',
+                    path: '/baseInfo',
+                    component: resolve => require(['../components/page/platform/base-info.vue'], resolve),
+                    meta: { title: '基础信息' }
+                },
+                {
+                    // 设备管理
+                    name: 'device',
                     path: '/device',
-                    component: resolve => require(['../components/page/device/device-home.vue'], resolve),
+                    component: resolve => require(['../components/page/platform/device-home.vue'], resolve),
                     meta: { title: '设备' }
                 },
                 {
+                    // 方案管理
+                    name: 'project',
                     path: '/project',
                     component: resolve => require(['../components/page/project/project-home.vue'], resolve),
                     meta: { title: '方案' }
+                },
+                {
+                    // 方案新增
+                    name: 'projectAdd',
+                    path: '/projectAdd',
+                    component: resolve => require(['../components/page/project/project-add.vue'], resolve),
+                    meta: { title: '新增方案' }
                 },
                 {
                     path: '/table',
@@ -94,8 +116,16 @@ export default new Router({
             ]
         },
         {
+            // 登录
+            name: 'login',
             path: '/login',
-            component: resolve => require(['../components/page/Login.vue'], resolve)
+            component: resolve => require(['../components/page/login/login.vue'], resolve)
+        },
+        {
+            // 注册
+            name: 'register',
+            path: '/register',
+            component: resolve => require(['../components/page/login/register.vue'], resolve)
         },
         {
             path: '/404',
