@@ -322,7 +322,7 @@
     "projecData": [{
         "id": "1",
         "status": "已审核",
-        "img": "....",
+        "src": "../../../../static/img/aqiyi.jpg",
         "name": "爱奇艺",
         "version": "2.2.0",
         "size": "32.3M",
@@ -331,7 +331,7 @@
     },{
         "id": "2",
         "status": "已审核",
-        "img": "....",
+        "src": "../../../../static/img/youku.jpg",
         "name": "优酷",
         "version": "1.0.2",
         "size": "22M",
@@ -340,7 +340,7 @@
     },{
         "id": "3",
         "status": "已审核",
-        "img": "....",
+        "src": "../../../../static/img/aqiyi.jpg",
         "name": "腾讯视频",
         "version": "9.2.1",
         "size": "50.0M",
@@ -349,7 +349,7 @@
     },{
         "id": "4",
         "status": "已审核",
-        "img": "....",
+        "src": "../../../../static/img/aqiyi.jpg",
         "name": "搜狐",
         "version": "5.5.0",
         "size": "100M",
@@ -358,7 +358,7 @@
     },{
         "id": "5",
         "status": "已审核",
-        "img": "....",
+        "src": "../../../../static/img/aqiyi.jpg",
         "name": "56视频",
         "version": "4.4.3",
         "size": "60.9M",
@@ -367,11 +367,62 @@
     },{
         "id": "6",
         "status": "已审核",
-        "img": "....",
+        "src": "../../../../static/img/aqiyi.jpg",
         "name": "美拍",
         "version": "8.2",
         "size": "66M",
         "downloadNum": "221",
         "notes": "无"
+    }],
+    "fileData": [{
+        "tomd_id": "1",
+        "tomd_type": "图片",
+        "tomd_name": "爱奇艺",
+        "tomd_size": "",
+        "tomd_poster_url": "",
+        "tomd_click_type": "",
+        "tomd_click": "",
+        "tomd_version": "",
+        "tomd_remark": "第一视频提供商"
+    },{
+        "tomd_id": "1",
+        "tomd_type": "图片",
+        "tomd_name": "爱奇艺",
+        "tomd_size": "",
+        "tomd_poster_url": "",
+        "tomd_click_type": "",
+        "tomd_click": "",
+        "tomd_version": "",
+        "tomd_remark": "第一视频提供商"
+    },{
+        "tomd_id": "1",
+        "tomd_type": "图片",
+        "tomd_name": "爱奇艺",
+        "tomd_size": "",
+        "tomd_poster_url": "",
+        "tomd_click_type": "",
+        "tomd_click": "",
+        "tomd_version": "",
+        "tomd_remark": "第一视频提供商"
+    },{
+        "tomd_id": "1",
+        "tomd_type": "图片",
+        "tomd_name": "爱奇艺",
+        "tomd_size": "",
+        "tomd_poster_url": "",
+        "tomd_click_type": "",
+        "tomd_click": "",
+        "tomd_version": "",
+        "tomd_remark": "第一视频提供商"
+    },{
+        "tomd_id": "1",
+        "tomd_type": "图片",
+        "tomd_name": "爱奇艺",
+        "tomd_size": "",
+        "tomd_poster_url": "",
+        "tomd_click_type": "",
+        "tomd_click": "",
+        "tomd_version": "",
+        "tomd_remark": "第一视频提供商"
     }]
 }

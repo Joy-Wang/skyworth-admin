@@ -200,3 +200,8 @@ a {
 .sky-yellow{
     color: #e6a23c;
 }
+
+/* 表格增加单选，隐藏label值 */
+.no-label .el-radio__label{
+    display: none;
+}

@@ -3,6 +3,8 @@ import App from './App';
 import router from './router';
 import axios from 'axios';
 import ElementUI from 'element-ui';
+import * as util from '../static/js/skyworth-util'; // 工具方法
+import * as xGlobal from '../static/js/skyworth-global'; // 工具方法
 import 'element-ui/lib/theme-chalk/index.css';    // 默认主题
 // import '../static/css/theme-green/index.css';       // 浅绿色主题
 import "babel-polyfill";
@@ -12,8 +14,8 @@ Vue.prototype.$axios = axios;
 
 //  使用钩子函数对路由进行权限跳转
 router.beforeEach((to, from, next) => {
-    const role = localStorage.getItem('ms_username');
-    if(!role && to.path !== '/login' && to.path !== '/register'){
+    const role = localStorage.getItem('sky_username');
+    if(!role && to.path !== '/login' && to.path !== '/register'){ // 未登录&&不是登录&&不是注册，限制用户在未登录的状态下手动修改URL
         next('/login');
     }else if(to.meta.permission){
         // 如果是管理员权限则可进入，这里只是简单的模拟管理员权限而已

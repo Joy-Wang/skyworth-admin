@@ -46,11 +46,11 @@
                         subs: [
                             {
                                 index: 'device',
-                                title: '设备'
+                                title: '设备管理'
                             },
                             {
                                 index: 'baseInfo',
-                                title: '基础信息'
+                                title: '基础数据管理'
                             }
                         ]
                     },
@@ -61,66 +61,23 @@
                     },
                     {
                         icon: 'el-icon-picture',
-                        index: 'tabs',
+                        index: 'file',
                         title: '素材管理'
                     },
                     {
-                        icon: 'el-icon-tickets',
-                        index: 'table',
-                        title: '基础表格'
+                        icon: 'el-icon-goods',
+                        index: 'ad',
+                        title: '广告管理'
                     },
                     {
-                        icon: 'el-icon-message',
-                        index: 'tabs',
-                        title: 'tab选项卡'
-                    },
-                    {
-                        icon: 'el-icon-date',
-                        index: '3',
-                        title: '表单相关',
-                        subs: [
-                            {
-                                index: 'form',
-                                title: '基本表单'
-                            },
-                            {
-                                index: 'editor',
-                                title: '富文本编辑器'
-                            },
-                            {
-                                index: 'markdown',
-                                title: 'markdown编辑器'
-                            },
-                            {
-                                index: 'upload',
-                                title: '文件上传'
-                            }
-                        ]
-                    },
-                    {
-                        icon: 'el-icon-star-on',
-                        index: 'charts',
-                        title: 'schart图表'
-                    },
-                    {
-                        icon: 'el-icon-rank',
-                        index: 'drag',
-                        title: '拖拽列表'
-                    },
-                    {
-                        icon: 'el-icon-warning',
-                        index: 'permission',
-                        title: '权限测试'
+                        icon: 'el-icon-bell',
+                        index: 'flowMonitoring',
+                        title: '流量监控与推荐'
                     },
                     {
                         icon: 'el-icon-error',
                         index: '404',
                         title: '404页面'
-                    },
-                    {
-                        icon: 'el-icon-error',
-                        index: 'test',
-                        title: '模板测试'
                     }
                 ]
             }

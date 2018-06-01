@@ -57,6 +57,27 @@ export default new Router({
                     meta: { title: '新增方案' }
                 },
                 {
+                    // 素材管理
+                    name: 'file',
+                    path: '/file',
+                    component: resolve => require(['../components/page/file/file.vue'], resolve),
+                    meta: { title: '素材管理' }
+                },
+                {
+                    // 广告管理
+                    name: 'ad',
+                    path: '/ad',
+                    component: resolve => require(['../components/page/ad/ad.vue'], resolve),
+                    meta: { title: '广告管理' }
+                },
+                {
+                    // 流量监控与推荐
+                    name: 'flowMonitoring',
+                    path: '/flowMonitoring',
+                    component: resolve => require(['../components/page/flowMonitoring/flow-monitoring.vue'], resolve),
+                    meta: { title: '流量监控与推荐' }
+                },
+                {
                     path: '/table',
                     component: resolve => require(['../components/page/BaseTable.vue'], resolve),
                     meta: { title: '基础表格' }
