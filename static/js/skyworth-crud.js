@@ -293,7 +293,7 @@ export const skyworthGet = (obj) => {
  * @param obj.error 查询失败的回调函数。如果没有特殊处理建议不赋值，方法提供了默认处理
  */
 export const skyworthComplexGet = (obj) => {
-  skyworthiComplexQuery(obj)
+  skyworthComplexQuery(obj)
 }
 
 /**
@@ -419,7 +419,7 @@ let _dealPostParam = (param) => {
   delete param.operatorId  //  操作人
   delete param.createdBy //  创建人
   delete param.updatedBy //  更新人
-  dealParams(param, false) //  删除无意义字段 null undefined
+  // dealParams(param, false) //  删除无意义字段 null undefined
 }
 /**
  * 删除无意义字段 null undefined ''

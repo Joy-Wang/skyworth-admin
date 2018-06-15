@@ -1,6 +1,6 @@
 <template>
     <div class="sidebar">
-        <el-menu class="sidebar-el-menu" :default-active="onRoutes" :collapse="collapse" background-color="#324157"
+        <el-menu class="sidebar-el-menu" :default-active="$route.path" :collapse="collapse" background-color="#324157"
             text-color="#bfcbd9" active-text-color="#20a0ff" unique-opened router>
             <template v-for="item in items">
                 <template v-if="item.subs">
@@ -42,6 +42,7 @@
                     },
                     {
                         icon: 'el-icon-mobile-phone',
+                        index: '1',
                         title: '平台管理',
                         subs: [
                             {
@@ -61,8 +62,18 @@
                     },
                     {
                         icon: 'el-icon-picture',
-                        index: 'file',
-                        title: '素材管理'
+                        index: '2',
+                        title: '素材管理',
+                        subs: [
+                            {
+                                index: 'file',
+                                title: '基础管理'
+                            },
+                            {
+                                index: '404',
+                                title: '应用管理'
+                            }
+                        ]
                     },
                     {
                         icon: 'el-icon-goods',

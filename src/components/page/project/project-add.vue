@@ -3,48 +3,76 @@
     <div class="project-home"> 
         <div class="container">
             <div class="handle-box">
-                <el-button type="success" @click="1">保 存</el-button>
-                <el-button type="primary" @click="1">提 交</el-button>
-                <el-button type="danger" @click="1">删 除</el-button>
+                <el-button type="" @click="cancleAdd()">取 消</el-button>
+                <el-button type="success" @click="saveProject()">保 存</el-button>
+                <el-button type="primary" @click="addProject()">提 交</el-button>
             </div>
             <!-- 基础信息折叠模块 -->
             <div class="fold-box"><span @click="infoShow = !infoShow"><i :class=" infoShow ? 'el-icon-caret-top' : 'el-icon-caret-bottom' "></i> 基础信息</span></div>
             <el-collapse-transition>
             <div class="handle-box" style="margin: 0" v-show="infoShow">
-                <el-form ref="form" :model="form" label-width="80px">
+                <el-form ref="form" :model="projectBaseInfo" label-width="100px">
                     <el-row>
                         <el-col :span="6">
-                            <el-form-item label="方案编码">
-                                <el-input v-model="projectForm.code" placeholder="请填写方案编码"></el-input>
+                            <el-form-item label="方案编码" class="required-label">
+                                <el-input v-model="projectBaseInfo.toseCode" disabled placeholder="方案编码自动生成" :maxlength="20"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
-                            <el-form-item label="方案名称">
-                                <el-input v-model="projectForm.name" placeholder="请填写方案名称"></el-input>
+                            <el-form-item label="方案名称" class="required-label">
+                                <el-input v-model="projectBaseInfo.toseName" placeholder="请填写方案名称" :maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="6">
-                            <el-form-item label="国家">
-                                <el-input v-model="projectForm.country" placeholder="请填写国家"></el-input>
+                            <el-form-item label="机型" class="required-label">
+                                <el-select v-model="projectBaseInfo.toseEquipmentType" placeholder="请选择机型">
+                                    <el-option
+                                    v-for="item in equipType"
+                                    :key="item.codeCode"
+                                    :label="item.codeName"
+                                    :value="item.codeCode">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="6">
+                            <el-form-item label="机芯" class="required-label">
+                                <el-select v-model="projectBaseInfo.toseEquipmentCore" placeholder="请选择机芯">
+                                    <el-option
+                                    v-for="item in equipCore"
+                                    :key="item.codeCode"
+                                    :label="item.codeName"
+                                    :value="item.codeCode">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="6">
+                            <el-form-item label="国家" class="required-label">
+                                <el-select v-model="projectBaseInfo.toseEquipmentCountry" @change="selectCountry" placeholder="请选择国家">
+                                    <el-option
+                                    v-for="item in country"
+                                    :key="item.codeCode"
+                                    :label="item.codeName"
+                                    :value="item.codeCode">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="语言">
-                                <el-input v-model="projectForm.language" placeholder="请填写语言"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="6">
-                            <el-form-item label="机型">
-                                <el-input v-model="projectForm.type1" placeholder="请填写机型"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="6">
-                            <el-form-item label="机芯">
-                                <el-input v-model="projectForm.type2" placeholder="请填写机芯"></el-input>
+                                <el-select v-model="projectBaseInfo.toseLanguage" placeholder="请选择语言">
+                                    <el-option
+                                    v-for="item in language"
+                                    :key="item.codeCode"
+                                    :label="item.codeName"
+                                    :value="item.codeCode">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -53,7 +81,7 @@
                             <el-form-item label="关联客户">
                                 <el-autocomplete
                                 popper-class="my-autocomplete"
-                                v-model="state1"
+                                v-model="projectBaseInfo.toseUnionCust"
                                 :fetch-suggestions="querySearch"
                                 placeholder="请输入名称"
                                 @select="handleSelect">
@@ -63,30 +91,37 @@
                                         @click="handleIconClick">
                                     </i>
                                     <template slot-scope="{ item }">
-                                        <div class="name">{{ item.value }}</div>
+                                        <div class="name">{{ item.toseUnionCustName }}</div>
                                     </template>
                                 </el-autocomplete>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="优先级">
-                                <el-input v-model="projectForm.level" placeholder="请填写优先级"></el-input>
+                                <el-input v-model="projectBaseInfo.toseLevel" placeholder="请填写优先级" :maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="版本">
-                                <el-input v-model="projectForm.version" placeholder="请填写版本"></el-input>
+                                <el-input v-model="projectBaseInfo.toseVersion" placeholder="请填写版本" :maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-form-item label="状态：" class="required-label">
+                            <el-radio v-model="projectBaseInfo.isenable" :label="1">生效</el-radio>
+                            <el-radio v-model="projectBaseInfo.isenable" :label="0">失效</el-radio>
+                        </el-form-item>
                     </el-row>
                     <el-row>
                         <el-col :span="18">
                             <el-form-item label="备注">
                                 <el-input
                                 type="textarea"
+                                :maxlength="200"
                                 :autosize="{ minRows: 3, maxRows: 4}"
                                 placeholder="请输入内容"
-                                v-model="textarea">
+                                v-model="projectBaseInfo.toseRemark">
                                 </el-input>
                             </el-form-item>
                         </el-col>
@@ -195,28 +230,41 @@
 <script>
     import draggable from 'vuedraggable'
     import $ from 'jquery'
+    import * as crud from '../../../../static/js/skyworth-crud'
     export default {
         data() {
             return {
                 url: './static/vuetable.json',
                 tableData: [],
-                projectForm: {
-                    name: '',
-                    code: '',
-                    country: '',
-                    language: '',
-                    type1: '',
-                    type2: '',
-                    level: ''
+                projectBaseInfo: {
+                    toseCode: '',
+                    toseName: '',
+                    toseEquipmentCore: 'U5',
+                    toseEquipmentType: '8R92T',
+                    toseEquipmentCountry: 'India',
+                    toseLanguage: '',
+                    toseLevel: '1',
+                    toseVersion: '',
+                    toseUnionCust: '',
+                    toseRemark: '',
+                    toseStatus: '',
+                    isenable: 1,
+                    schemeDetail: [
+                        {
+                            tosdModelId: 0,
+                            tosdModelOrder: 0,
+                            tosdRefId: 0,
+                            tosdRefUrl: "",
+                            tosdToseId: 0
+                        }
+                    ]
                 },
-                radioAdd: '',
-                textarea: '',
+                equipCore: [], // 机芯
+                equipType: [], // 机型
+                country: [], // 国家
+                language: [], // 语言
                 projecData: [],
-                cur_page: 1,
                 multipleSelection: [],
-                select_cate: '',
-                select_word: '',
-                del_list: [],
                 manageProjectVisible: false,
                 delVisible: false,
                 infoShow: true,
@@ -247,130 +295,6 @@
                     {
                         value: '2',
                         label: '竖向'
-                    }
-                ],
-                DeviceType1: [ // 机型
-                    {
-                        value: '1',
-                        label: 'U1'
-                    }, 
-                    {
-                        value: '2',
-                        label: 'U2'
-                    }, 
-                    {
-                        value: '3',
-                        label: 'U3'
-                    }, 
-                    {
-                        value: '4',
-                        label: 'U4'
-                    }, 
-                    {
-                        value: '5',
-                        label: 'U5'
-                    }
-                ],
-                DeviceType2: [ // 机芯
-                    {
-                        value: '1',
-                        label: 'U7583'
-                    }, 
-                    {
-                        value: '2',
-                        label: '67SHI'
-                    }, 
-                    {
-                        value: '3',
-                        label: 'BANHA'
-                    }, 
-                    {
-                        value: '4',
-                        label: 'SJK34'
-                    }, 
-                    {
-                        value: '5',
-                        label: 'VMLKSH'
-                    }
-                ],
-                DeviceCountry: [ // 国家
-                    {
-                        value: '1',
-                        label: '印度'
-                    }, 
-                    {
-                        value: '2',
-                        label: '埃及'
-                    }, 
-                    {
-                        value: '3',
-                        label: '阿富汗'
-                    }, 
-                    {
-                        value: '4',
-                        label: '南非'
-                    }, 
-                    {
-                        value: '5',
-                        label: '巴基斯坦'
-                    }
-                ],
-                client: [
-                    {
-                        value: '1',
-                        label: '印度'
-                    },
-                    {
-                        value: '2',
-                        label: '泰国'
-                    },
-                    {
-                        value: '3',
-                        label: '韩国'
-                    },
-                    {
-                        value: '4',
-                        label: '美国'
-                    }
-                ],
-                rank: [
-                    {
-                        value: '100',
-                        label: '100'
-                    },
-                    {
-                        value: '1000',
-                        label: '1000'
-                    },
-                    {
-                        value: '5000',
-                        label: '5000'
-                    },
-                    {
-                        value: '10000',
-                        label: '10000'
-                    },
-                    {
-                        value: '50000',
-                        label: '50000'
-                    },
-                    {
-                        value: '9999999',
-                        label: '9999999'
-                    }
-                ],
-                version: [
-                    {
-                        value: '1',
-                        label: '1.0'
-                    },
-                    {
-                        value: '1.1',
-                        label: '1.1'
-                    },
-                    {
-                        value: '2.0',
-                        label: '2.0'
                     }
                 ],
                 dragOptions:{
@@ -433,10 +357,15 @@
             draggable
         },
         created() {
-            this.getData();
+            let self = this
+            this.getSelectData('country')
+            this.getSelectData('language')
+            this.getSelectData('equip_type')
+            this.getSelectData('equip_core')
+            this.clearBaseInfo()
         },
         mounted() {
-            this.restaurants = this.loadAll();
+            this.GetSchemeCustSug()
         },
         computed: {
             data() {
@@ -459,7 +388,89 @@
                 })
             }
         },
+        watch: {
+            '$route' (to, from) {
+                let self = this
+                if (to.name === 'projectAdd') {
+                }
+            }
+        },
         methods: {
+            // 保存
+            saveProject () {
+            },
+            // 新增
+            addProject () {
+                let self = this
+                let params = this.projectBaseInfo
+                crud.skyworthComplexSave({
+                    url: '/api/scheme/addScheme',
+                    param: params,
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.$router.push({name: 'project'})
+                        eventBus.$emit('todo', '')
+                        eventBus.$emit('projectGetList', '')
+                        self.clearBaseInfo()
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 取消
+            cancleAdd () {
+                eventBus.$emit('todo', '')
+                this.clearBaseInfo()
+                this.$router.push({name: 'project'})
+            },
+            // 获取下拉列表数据
+            getSelectData (type) {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/public/queryBaseType',
+                    param: {codeType: type},
+                    success: function (data) {
+                        if (type == 'country') {
+                            self.country = data
+                        } else if (type == 'equip_core') {
+                            self.equipCore = data
+                        } else if (type == 'equip_type') {
+                            self.equipType = data
+                        } else if (type == 'language') {
+                            self.language = data
+                        }
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 初始化数据
+            clearBaseInfo () {
+                let self = this
+                for (let key in self.projectBaseInfo) { // 新增清空数据列表
+                    if (key != 'isenable' && key != 'toseEquipmentCore' && key != 'toseEquipmentType' && key != 'toseEquipmentCountry' && key != 'toseLevel' && key != 'schemeDetail') {
+                        delete self.manageBaseInfoData[key]
+                    }
+                }
+            },
+            // 选择国家
+            selectCountry (val) {
+                console.log(val)
+            },
             // 分页导航
             handleCurrentChange(val) {
                 this.cur_page = val;
@@ -512,6 +523,24 @@
             },
             choose () { // 选择时
             },
+            // 模糊搜索客户数据
+            GetSchemeCustSug () {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/scheme/GetSchemeCustSug',
+                    param: '',
+                    success: function (data) {
+                        self.restaurants = data
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
             // 模糊搜索
             querySearch(queryString, cb) {
                 var restaurants = this.restaurants;
@@ -549,28 +578,8 @@
                 // this.todo.splice($.inArray(self.todo[id], self.todo), 1)
                 console.log(id, this.todo)
             },
-            // 加载数据
-            loadAll() {
-                return [
-                { "value": "林丽" },
-                { "value": "张三" },
-                { "value": "王麻子" },
-                { "value": "刘武" },
-                { "value": "胡德" },
-                { "value": "欧阳吉吉" },
-                { "value": "姑苏慕容复" },
-                { "value": "王语嫣" },
-                { "value": "小飞鼠" },
-                { "value": "大胖" },
-                { "value": "孟峰" },
-                { "value": "吴彦祖" },
-                { "value": "林丹" },
-                { "value": "陈冠希" },
-                { "value": "周杰伦" }
-                ];
-            },
             handleSelect(item) {
-                console.log(item);
+                this.projectBaseInfo.toseUnionCust = item.toseUnionCustName
             },
             handleIconClick(ev) {
                 console.log(ev);
@@ -707,6 +716,10 @@
         display: block;
         color: transparent;
         border-style: dashed
+    }
+    .project-h4{
+        height: 50px;
+        line-height: 50px;
     }
     .fold-box{
         height: 40px;

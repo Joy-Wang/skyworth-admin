@@ -8,12 +8,12 @@
                         <el-row :gutter="20">
                             <el-col :span="5">
                                 <el-form-item label="类型" label-width="40px">
-                                    <el-select v-model="country" placeholder="请选择类型">
+                                    <el-select v-model="searchInfoType" clearable placeholder="请选择类型">
                                         <el-option
-                                        v-for="item in DeviceCountry"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
+                                        v-for="item in infoType"
+                                        :key="item.codeCode"
+                                        :label="item.codeName"
+                                        :value="item.codeCode">
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
@@ -24,8 +24,8 @@
                                 </el-form-item>
                             </el-col>
                             <el-col :span="5">
-                                <el-button type="primary" icon="search" @click="search">查询</el-button>
-                                <el-button type="primary" icon="search" @click="manageDevice()">新增</el-button>
+                                <el-button type="primary" icon="search" @click="search()">查询</el-button>
+                                <el-button type="primary" icon="search" @click="manageBaseInfo(true)">新增</el-button>
                             </el-col>
                         </el-row>
                     </el-form>
@@ -36,11 +36,11 @@
                         <el-pagination class="page-box"
                         @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
-                        :current-page="currentPage4"
-                        :page-sizes="[10, 20, 30, 40]"
-                        :page-size="10"
+                        :current-page="pageQuery.pageNum"
+                        :page-sizes="[10, 20, 30]"
+                        :page-size="pageQuery.pageSize"
                         layout="total, sizes, prev, pager, next, jumper"
-                        :total="40">
+                        :total="pageQuery.total">
                         </el-pagination>
                     </div>
                 </div>
@@ -49,140 +49,112 @@
             <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="code_type" label="类型" width="100" header-align="center">
+                <el-table-column prop="codeTypeName" label="类型" width="100" header-align="center">
                 </el-table-column>
                 <el-table-column label="名称" width="200" header-align="center">
                     <template slot-scope="scope">
-                        <a class="click-name" @click="manageDevice({add: false, data: scope.row})">{{ scope.row.code_name }}</a>
+                        <a class="click-name" @click="manageBaseInfo(false, scope.row)">{{ scope.row.codeName }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="code_code" label="编码" width="80" header-align="center">
+                <el-table-column prop="codeCode" label="编码" width="150" header-align="center">
                 </el-table-column>
-                <el-table-column prop="code_seq" label="排序" width="80" header-align="center" align="center">
+                <el-table-column prop="codeSeq" label="排序" width="80" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="code_desc" label="备注" width="auto" header-align="center">
+                <el-table-column prop="codeDesc" label="备注" width="auto" header-align="center">
                 </el-table-column>
                 <el-table-column label="状态" width="80" header-align="center" align="center">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.code_status == 1" class="sky-green">有效</span>
-                        <span v-else-if="scope.row.code_status == 2" class="sky-red">无效</span>
+                        <span v-if="scope.row.isenable == 1" class="sky-green">有效</span>
+                        <span v-else-if="scope.row.isenable == 0" class="sky-red">无效</span>
                     </template>
                 </el-table-column>
             </el-table>
         </div>
 
         <!-- 基础信息管理框 -->
-        <el-dialog title="基础信息管理" :visible.sync="manageDeviceVisible" width="35%">
-            <el-form label-width="80px">
-                <el-form-item label="编码">
-                    <el-input v-if="isAdd" v-model="manageBaseInfoData.code_code" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A"></el-input>
-                    <el-input v-if="!isAdd" v-model="manageBaseInfoData.code_code" disabled placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A"></el-input>
+        <el-dialog title="基础信息管理" :visible.sync="manageInfoVisible" width="35%">
+            <el-form :model="manageBaseInfoData" label-width="80px">
+                <el-form-item label="编码：" class="required-label">
+                    <el-input v-if="isAdd" v-model="manageBaseInfoData.codeCode" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="20"></el-input>
+                    <el-input v-if="!isAdd" v-model="manageBaseInfoData.codeCode" disabled placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="20"></el-input>
                 </el-form-item>
-                <el-form-item label="名称">
-                    <el-input v-model="manageBaseInfoData.code_name" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001"></el-input>
+                <el-form-item label="名称：" class="required-label">
+                    <el-input v-model="manageBaseInfoData.codeName" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001" maxlength="20"></el-input>
                 </el-form-item>
-                <el-form-item label="类型">
-                    <el-select v-model="manageBaseInfoData.code_type" v-if="isAdd" placeholder="请选择类型">
+                <el-form-item label="类型：" class="required-label">
+                    <el-select v-model="manageBaseInfoData.codeTypeName" v-if="isAdd" placeholder="请选择类型">
                         <el-option
-                        v-for="item in DeviceType1"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
+                        v-for="item in infoType"
+                        :key="item.codeCode"
+                        :label="item.codeName"
+                        :value="item.codeCode">
                         </el-option>
                     </el-select>
-                    <el-select v-model="manageBaseInfoData.code_type" v-if="!isAdd" disabled placeholder="请选择类型">
+                    <el-select v-model="manageBaseInfoData.codeType" v-if="!isAdd" disabled placeholder="请选择类型">
                     </el-select>
                 </el-form-item>
-                <el-form-item label="状态">
-                    <el-select v-model="manageBaseInfoData.code_status" placeholder="请选择状态">
-                        <el-option
-                        v-for="item in baseInfoStatus"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
-                        </el-option>
-                    </el-select>
+                <el-form-item label="状态：" class="required-label">
+                    <el-radio v-model="manageBaseInfoData.isenable" :label="1">生效</el-radio>
+                    <el-radio v-model="manageBaseInfoData.isenable" :label="0">失效</el-radio>
                 </el-form-item>
-                <el-form-item label="排序">
-                    <el-input v-model="manageBaseInfoData.code_seq"></el-input>
+                <el-form-item label="排序：">
+                    <el-input v-model="manageBaseInfoData.codeSeq" maxlength="20"></el-input>
                 </el-form-item>
-                <el-form-item label="备注">
-                    <el-input type="textarea"
+                <el-form-item label="描述：">
+                    <el-input
+                        type="textarea"
+                        maxlength="100"
                         :rows="2"
                         placeholder="请输入内容"
-                        v-model="manageBaseInfoData.code_desc">
+                        v-model="manageBaseInfoData.codeDesc">
                     </el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="manageDeviceVisible = false">取 消</el-button>
-                <el-button type="danger" @click="manageDeviceVisible = false">删 除</el-button>
-                <el-button type="primary" @click="manageDeviceVisible = false">提 交</el-button>
+                <el-button @click="manageInfoVisible = false">取 消</el-button>
+                <el-button v-if="isAdd" type="primary" @click="addBaseInfo()">提 交</el-button>
+                <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
+                <el-button v-if="!isAdd" type="danger" @click="deleteBaseInfo()">删 除</el-button>
             </span>
         </el-dialog>
     </div>
 </template>
 
 <script>
+    import $ from 'jquery'
+    import * as crud from '../../../../static/js/skyworth-crud'
     export default {
         data() {
             return {
                 url: './static/vuetable.json',
                 tableData: [],
-                cur_page: 1,
                 multipleSelection: [],
                 select_cate: '',
                 select_word: '',
                 del_list: [],
                 searchVisible: false,
-                manageDeviceVisible: false,
+                manageInfoVisible: false,
                 delVisible: false,
                 isAdd: true,
                 country: '',
                 searName: '',
+                infoType: [],
+                searchInfoType: '',
+                baseInfoStatus: [],
                 manageBaseInfoData: {
-                    code_code: '',
-                    code_name: '',
-                    code_type: '',
-                    code_status: '',
-                    code_seq: '',
-                    code_desc: ''
+                    codeCode: '',
+                    codeName: '',
+                    codeType: '',
+                    isenable: 1,
+                    codeSeq: '',
+                    codeDesc: '',
+                    codeTypeName: 'base_type'
                 },
-                state1: '',
-                state2: '',
-                state3: '',
-                DeviceType1: [ // 机型
-                    {
-                        value: '1',
-                        label: 'U1'
-                    }, 
-                    {
-                        value: '2',
-                        label: 'U2'
-                    }, 
-                    {
-                        value: '3',
-                        label: 'U3'
-                    }, 
-                    {
-                        value: '4',
-                        label: 'U4'
-                    }, 
-                    {
-                        value: '5',
-                        label: 'U5'
-                    }
-                ],
-                baseInfoStatus: [ // 状态
-                    {
-                        value: '1',
-                        label: '启用'
-                    }, 
-                    {
-                        value: '2',
-                        label: '禁用'
-                    }
-                ],
+                pageQuery: { // 分页
+                    pageNum: 1,
+                    pageSize: 10,
+                    total: 0
+                },
                 idx: -1
             }
         },
@@ -191,6 +163,7 @@
         },
         mounted () {
             this.restaurants = this.loadAll();
+            this.getSelectData('base_type')
         },
         computed: {
             data() {
@@ -214,34 +187,184 @@
             }
         },
         methods: {
-            // 分页导航
+            // 分页导航-当前页
             handleCurrentChange(val) {
-                this.cur_page = val;
-                this.getData();
+                this.pageQuery.pageNum = val
+                this.getData()
             },
-            // 获取 easy-mock 的模拟数据
+            // 一页显示多少条
+            handleSizeChange (val) {
+                this.pageQuery.pageSize = val
+                this.getData()
+            },
+            // 获取基础数据
             getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.url = '../../../../static/vuetable.json'; // 模拟数据
-                this.$axios.get(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.baseInfoList;
+                let self = this
+                let dataUrl = '/api/baseinfo/queryParameterList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize                
+                crud.skyworthGet({
+                    url: dataUrl,
+                    param: '',
+                    success: function (data) {
+                        self.tableData = data.list
+                        self.pageQuery.total = data.total
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
                 })
             },
-            // 设备查询
+            // 信息查询
             search () {
-    
+                let self = this
+                let dataUrl = '/api/baseinfo/queryParameterList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize + '&codeType=' + this.searchInfoType                
+                if (this.searchInfoType != '') {
+                    crud.skyworthGet({
+                        url: dataUrl,
+                        param: '',
+                        success: function (data) {
+                            self.tableData = data.list
+                            self.pageQuery.total = data.total
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                } else {
+                    self.getData()
+                }
             },
-            // 设备新增/设备管理
-            manageDevice ({add = true, data = ''} = {}) {
-                // if (!data) data = '' 
-                this.isAdd = add;
-                this.manageDeviceVisible = true;
-                this.manageBaseInfoData = data
+            // 打开基础信息管理窗口
+            manageBaseInfo (view, data) {
+                let self = this
+                data ? data : ''
+                if ( view ) { // 新增
+                    self.manageBaseInfoData.isenable = 1
+                    self.manageBaseInfoData.codeTypeName = 'base_type'
+                    for (let key in self.manageBaseInfoData) { // 新增清空数据列表
+                        if (key != 'isenable' && key != 'codeTypeName') {
+                            delete self.manageBaseInfoData[key]
+                        }
+                    }
+                    self.isAdd = view
+                } else { // 修改
+                    let params = {codeId: data.codeId}
+                    crud.skyworthGet({ // 通过id获取当前信息
+                        url: '/api/baseinfo/fingParameterById',
+                        param: params,
+                        success: function (data) {
+                            self.manageBaseInfoData = data
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                    self.isAdd = view
+                }
+                this.manageInfoVisible = true
+            },
+            // 新增基础信息
+            addBaseInfo () {
+                let self = this
+                let parmams = this.manageBaseInfoData
+                crud.skyworthComplexSave({
+                    url: '/api/baseinfo/addParameterCode',
+                    param: parmams,
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageInfoVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 修改
+            updateInfo () {
+                let self = this
+                let parmams = this.manageBaseInfoData
+                crud.skyworthComplexUpdate({
+                    url: '/api/baseinfo/updateParameterCode',
+                    param: parmams,
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageInfoVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 删除信息
+            deleteBaseInfo () {
+                let self = this
+                crud.skyworthDelete({
+                    url: '/api/baseinfo/deleteParameterCode' + '?codeId=' + self.manageBaseInfoData.codeId,
+                    param: '',
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageInfoVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 获取下拉列表数据
+            getSelectData (type) {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/queryBaseType',
+                    param: {codeType: type},
+                    success: function (data) {
+                        self.infoType = data
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
             },
             // 模糊搜索
             querySearch(queryString, cb) {

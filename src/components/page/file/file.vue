@@ -8,24 +8,24 @@
                         <el-row :gutter="20">
                             <el-col :span="6">
                                 <el-form-item label="素材类型" label-width="80px">
-                                    <el-select v-model="type" placeholder="请选择类型">
+                                    <el-select v-model="searchType" clearable placeholder="请选择类型">
                                         <el-option
-                                        v-for="item in FileType"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
+                                        v-for="item in materialType"
+                                        :key="item.codeCode"
+                                        :label="item.codeName"
+                                        :value="item.codeCode">
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="6">
                                 <el-form-item label="标题名称" label-width="80px">
-                                    <el-input v-model="searName" placeholder="请输入名称"></el-input>                                    
+                                    <el-input v-model="searchName" placeholder="请输入名称"></el-input>                                    
                                 </el-form-item>
                             </el-col>
                             <el-col :span="5">
-                                <el-button type="primary" icon="search" @click="search">查询</el-button>
-                                <el-button type="primary" icon="search" @click="manageFile()">新增</el-button>
+                                <el-button type="primary" icon="search" @click="search()">查询</el-button>
+                                <el-button type="primary" icon="search" @click="findMaterialById(true)">新增</el-button>
                             </el-col>
                         </el-row>
                     </el-form>
@@ -36,30 +36,42 @@
                         <el-pagination class="page-box"
                         @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
-                        :current-page="currentPage4"
-                        :page-sizes="[10, 20, 30, 40]"
-                        :page-size="10"
+                        :current-page="pageQuery.pageNum"
+                        :page-sizes="[10, 20, 30]"
+                        :page-size="pageQuery.size"
                         layout="total, sizes, prev, pager, next, jumper"
-                        :total="40">
+                        :total="pageQuery.total">
                         </el-pagination>
                     </div>
                 </div>
             </div>
             <!-- table -->
-            <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
+            <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable">
                 <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="tomd_type" label="素材类型" width="150" header-align="center">
+                <el-table-column prop="tomdTypeName" label="素材类型" width="100" header-align="center" align="center">
                 </el-table-column>
                 <el-table-column label="标题名称" width="150" header-align="center">
                     <template slot-scope="scope">
-                        <a class="click-name" @click="manageFile({add: false, data: scope.row})">{{ scope.row.tomd_name }}</a>
+                        <a class="click-name" @click="findMaterialById(false, scope.row)">{{ scope.row.tomdName }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="tomd_poster_url" label="图片" width="150" header-align="center">
+                <el-table-column label="图片" width="100" header-align="center">
+                    <template slot-scope="scope">
+                        <img class="file-table-img" :src="scope.row.tomdPosterUrl" />
+                    </template>
                 </el-table-column>
-                <el-table-column prop="tomd_remark" label="描述" width="auto" header-align="center">
+                <el-table-column prop="tomdSizeName" label="布局" width="100" header-align="center" align="center">
                 </el-table-column>
+                <el-table-column prop="tomdRemark" label="描述" width="auto" header-align="center">
+                </el-table-column>
+                <el-table-column prop="tomdVersion" label="版本" width="100" header-align="center" align="center">
+                </el-table-column>
+                    <el-table-column label="状态" width="80" header-align="center" align="center">
+                        <template slot-scope="scope">
+                            <span :class="scope.row.isenable == '1' ? 'sky-green' : 'sky-red'">{{ scope.row.isenable ? '有效' : '无效' }}</span>
+                        </template>
+                    </el-table-column>
             </el-table>
             <div v-if="0">
                 <div class="content-title">支持拖拽</div>
@@ -99,78 +111,88 @@
         </div>
         
         <!-- 素材管理框 -->
-        <el-dialog title="基础信息管理" :visible.sync="manageFileVisible" width="40%">
-            <el-form label-width="100px">
-                <el-form-item label="标题名称">
-                    <el-input v-model="manageBaseInfoData.code_code" placeholder="请输入标题名称"></el-input>
+        <el-dialog :title=" isAdd ? '新增素材' : '修改素材'" :visible.sync="manageFileVisible" width="40%">
+            <el-form label-width="110px">
+                <el-form-item label="标题名称" class="required-label">
+                    <el-input v-model="manageBaseInfoData.tomdName" placeholder="请输入标题名称"></el-input>
                 </el-form-item>
-                <el-form-item label="素材类型">
-                    <el-select v-model="manageBaseInfoData.code_type" placeholder="请选择类型">
+                <el-form-item label="素材类型" class="required-label">
+                    <el-select v-model="manageBaseInfoData.tomdTypeName" placeholder="请选择类型" @change="chooseTomdType">
                         <el-option
-                        v-for="item in DeviceType1"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
+                        v-for="item in materialType"
+                        :key="item.codeCode"
+                        :label="item.codeName"
+                        :value="item.codeCode">
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="布局大小">
-                    <el-select v-model="manageBaseInfoData.code_type" placeholder="请选择大小">
+                <el-form-item label="布局大小" class="required-label">
+                    <el-select v-model="manageBaseInfoData.tomdSizeName" placeholder="请选择大小" @change="chooseTomdSize">
                         <el-option
-                        v-for="item in DeviceType1"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
+                        v-for="item in materialSize"
+                        :key="item.codeCode"
+                        :label="item.codeName"
+                        :value="item.codeCode">
                         </el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="海报">
                     <el-upload
-                        class="upload-demo"
-                        action="https://jsonplaceholder.typicode.com/posts/"
-                        :show-file-list="true"
+                        class="upload-demo file-upload"
+                        action="http://172.20.114.62:8082/tvmanage/public/uploadFile"
+                        :on-change="handleChange"
                         :on-success="handleAvatarSuccess"
                         :before-upload="beforeAvatarUpload"
-                        :max-count="-1"
                         :on-preview="handlePreview"
                         :on-remove="handleRemove"
-                        :auto-upload="false"
-                        :file-list="fileList2"
-                        list-type="picture">
+                        :before-remove="beforeRemove"
+                        multiple
+                        :limit="1"
+                        :auto-upload="true"
+                        :on-exceed="handleExceed"
+                        :file-list="fileList">
                         <el-button size="small" type="primary">点击上传</el-button>
                         <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
                     </el-upload>
                 </el-form-item>
                 <el-form-item label="海报预览">
                     <div class="avatar-box">
-                        <img :src="imageUrl" class="avatar">
+                        <img :src="localImageUrl" class="avatar">
                     </div>
                 </el-form-item>
-                <el-form-item label="点击事件类型">
-                    <el-select v-model="manageBaseInfoData.code_type" placeholder="请选择类型">
+                <el-form-item label="点击事件类型" class="required-label">
+                    <el-select v-model="manageBaseInfoData.tomdClickTypeName" placeholder="请选择类型" @change="chooseTomdClickType">
                         <el-option
-                        v-for="item in DeviceType1"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
+                        v-for="item in materialClick"
+                        :key="item.codeCode"
+                        :label="item.codeName"
+                        :value="item.codeCode">
                         </el-option>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="点击事件内容">
-                    <el-input v-model="manageBaseInfoData.code_seq"></el-input>
+                    <el-input v-model="manageBaseInfoData.tomdClick"></el-input>
+                </el-form-item>
+                <el-form-item label="状态：" class="required-label">
+                    <el-radio v-model="manageBaseInfoData.isenable" :label="1">生效</el-radio>
+                    <el-radio v-model="manageBaseInfoData.isenable" :label="0">失效</el-radio>
+                </el-form-item>
+                <el-form-item label="版本">
+                    <el-input v-model="manageBaseInfoData.tomdVersion"></el-input>
                 </el-form-item>
                 <el-form-item label="描述">
                     <el-input type="textarea"
                         :rows="2"
                         placeholder="请输入内容"
-                        v-model="manageBaseInfoData.code_desc">
+                        v-model="manageBaseInfoData.tomdRemark">
                     </el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="manageFileVisible = false">取 消</el-button>
-                <el-button type="danger" @click="manageFileVisible = false">删 除</el-button>
-                <el-button type="primary" @click="manageFileVisible = false">提 交</el-button>
+                <el-button v-if="isAdd" type="primary" @click="addMaterial()">提 交</el-button>
+                <el-button v-if="!isAdd" type="primary" @click="updateMaterial()">提 交</el-button>
+                <el-button v-if="!isAdd" type="danger" @click="deleteMaterial()">删 除</el-button>
             </span>
         </el-dialog>
     </div>
@@ -178,43 +200,58 @@
 
 <script>
     import VueCropper  from 'vue-cropperjs';
+    import $ from 'jquery'
+    import * as crud from '../../../../static/js/skyworth-crud'
     export default {
         data: function(){
             return {
+                pageQuery: { // 分页
+                    pageNum: 1,
+                    pageSize: 10,
+                    total: 0
+                },
+                tableData: [],
+                manageBaseInfoData: {
+                    tomdType: '1',
+                    tomdTypeName: '图片',
+                    tomdName: '',
+                    tomdSize: '1',
+                    tomdSizeName: '1x1',
+                    tomdPosterUrl: '',
+                    tomdClickType: '1',
+                    tomdClickTypeName: '启动应用',
+                    tomdClick: '',
+                    tomdVersion: '',
+                    tomdRemark: '',
+                    isenable: 1
+                },
+                searchName: '',
+                materialType: [],
+                materialSize: [],
+                materialClick: [],
+                searchType: '',
+                manageFileVisible: false,
+                isAdd: true,
+                imageUrl: '',
+                localImageUrl: '',
+                fileList: [],
                 defaultSrc: './static/img/img.jpg',
                 fileList: [],
                 imgSrc: '',
                 cropImg: '',
                 dialogVisible: false,
-                manageFileVisible: false,
                 url: './static/vuetable.json',
-                imageUrl: '',
-                tableData: [],
-                cur_page: 1,
-                multipleSelection: [],
-                select_cate: '',
-                select_word: '',
-                del_list: [],
-                manageBaseInfoData: {
-                    code_code: '',
-                    code_name: '',
-                    code_type: '',
-                    code_status: '',
-                    code_seq: '',
-                    code_desc: ''
-                },
-                type: '',
-                FileType: [{
-                    value: '1',
-                    label: '图片'
-                },{
-                    value: '2',
-                    label: '应用'
-                },{
-                    value: '3',
-                    label: '视频'
-                }]
+                cur_page: 1
             }
+        },
+        created() {
+            this.getData();
+            this.cropImg = this.defaultSrc;
+        },
+        mounted () {
+            this.getSelectData('material_type')
+            this.getSelectData('material_size')
+            this.getSelectData('material_click')
         },
         components: {
             VueCropper
@@ -225,36 +262,255 @@
                 this.cur_page = val;
                 this.getData();
             },
-            // 获取 easy-mock 的模拟数据
+            handleSizeChange() {
+
+            },
+            // 获取数据
             getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.url = '../../../../static/vuetable.json'; // 模拟数据
-                this.$axios.get(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.fileData;
+                let self = this
+                let dataUrl = '/api/material/queryMaterialList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
+                crud.skyworthGet({
+                    url: dataUrl,
+                    param: '',
+                    success: function (data) {
+                        self.setImg(data)
+                        self.pageQuery.total = data.total
+
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
                 })
             },
-            // 打开管理框
-            manageFile () {
+            // 获取下拉列表数据
+            getSelectData (type) {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/public/queryBaseType',
+                    param: {codeType: type},
+                    success: function (data) {
+                        if (type == 'material_type') {
+                            self.materialType = data
+                        } else if (type == 'material_size') {
+                            self.materialSize = data
+                        } else if (type == 'material_click') {
+                            self.materialClick = data
+                        }
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 搜索
+            search () {
+                let self = this
+                let params = {tomdType: self.searchType, tomdName: self.searchName}
+                if (self.searchType == '' && self.searchName == '') {
+                    self.getData()
+                } else {
+                    crud.skyworthGet({
+                        url: '/api/material/queryMaterialList',
+                        param: params,
+                        success: function (data) {
+                            self.setImg(data)
+                            self.pageQuery.total = data.total
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                }
+            },
+            // 格式化图片
+            setImg (data) {
+                let self = this
+                let dataList = data.list
+                for (let i = 0; i < dataList.length; i ++) {
+                    if (dataList[i].tomdPosterUrl == '') {
+                        dataList[i].tomdPosterUrl = './static/img/img.png'
+                    } else {
+                        dataList[i].tomdPosterUrl = 'http://172.20.114.62:8082/tvmanage/' + dataList[i].tomdPosterUrl
+                    }
+                }
+                self.tableData = dataList
+            },
+            // 打开管理窗口
+            findMaterialById (view, data) {
+                let self = this
+                data ? data : ''
+                if ( view ) { // 新增
+                    for (let key in self.ruleForm) { // 新增清空数据列表
+                        if (key != 'isenable' && key != 'tourSex' && key != 'tourType') {
+                            delete self.ruleForm[key]
+                        }
+                    }
+                    self.isAdd = view
+                } else { // 修改
+                    let params = {tomdId: data.tomdId}
+                    crud.skyworthGet({ // 通过id获取当前用户信息
+                        url: '/api/material/findMaterialById',
+                        param: params,
+                        success: function (data) {
+                            if (data.tomdPosterUrl != '') {
+                               self.localImageUrl = 'http://172.20.114.62:8082/tvmanage/' + data.tomdPosterUrl
+                            }
+                            data.tomdTypeName = self.chooseCodeName('tomdType', data.tomdType)
+                            data.tomdSizeName = self.chooseCodeName('tomdSize', data.tomdSize)
+                            data.tomdClickTypeName = self.chooseCodeName('tomdClickType', data.tomdClickType)
+                            console.log(data)
+                            self.manageBaseInfoData = data
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                    self.isAdd = view
+                }
                 this.manageFileVisible = true
             },
+            // 新增素材
+            addMaterial () {
+                let self = this
+                this.manageBaseInfoData.tomdPosterUrl = this.imageUrl
+                let parmams = this.manageBaseInfoData
+                crud.skyworthComplexSave({
+                    url: '/api/material/addMaterial',
+                    param: parmams,
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageFileVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 修改
+            updateMaterial () {
+                let self = this
+                let parmams = this.manageBaseInfoData
+                crud.skyworthComplexUpdate({
+                    url: '/api/material/updateMaterial',
+                    param: parmams,
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageFileVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 删除
+            deleteMaterial () {
+                let self = this
+                crud.skyworthDelete({
+                    url: '/api/material/deleteMaterial?tomdId=' + self.manageBaseInfoData.tomdId,
+                    param: '',
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageFileVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
             // 上传
+            handleChange(file, fileList) {
+                // this.imageUrl = file.url
+            },
             handleRemove(file, fileList) {
-                this.imageUrl = URL.createObjectURL(fileList.raw);
-                console.log(file, fileList);
+                this.localImageUrl = ''
             },
             handlePreview(file) {
                 console.log(file);
             },
             handleAvatarSuccess(res, file) {
-                this.imageUrl = URL.createObjectURL(file.raw);
+                this.localImageUrl = URL.createObjectURL(file.raw);
+                this.imageUrl = res.data
+                console.log(res, file)
             },
             beforeAvatarUpload(file) {
+
+            },
+            beforeRemove(file){
                 console.log(file)
+            },
+            handleExceed() {
+
+            },
+            chooseTomdType (val) {
+                this.manageBaseInfoData.tomdType = val
+            },
+            chooseTomdSize (val) {
+                this.manageBaseInfoData.tomdSize = val
+            },
+            chooseTomdClickType (val) {
+                this.manageBaseInfoData.tomdClickType = val
+            },
+            // 筛选codeName
+            chooseCodeName (type, value) {
+                let self = this
+                let obj = {};
+                if (type == 'tomdType') {
+                    obj = self.materialType.find((item)=>{
+                        return item.codeCode == value;
+                    });
+                } else if (type == 'tomdSize') {
+                    obj = self.materialSize.find((item)=>{
+                        return item.codeCode == value;
+                    });
+                } else if (type == 'tomdClickType') {
+                    obj = self.materialClick.find((item)=>{
+                        return item.codeCode == value;
+                    });
+                }
+                return obj.codeName
             },
             // 备注
             setImage(e){
@@ -286,14 +542,7 @@
                     message: '图片上传接口上传失败，可更改为自己的服务器接口'
                 });
             }
-        },
-        created() {
-            this.getData();
-            this.cropImg = this.defaultSrc;
-        },
-        mounted () {
-            this.restaurants = this.loadAll();
-        },
+        }
     }
 </script>
 
@@ -343,12 +592,17 @@
         margin-bottom: 10px;
     }
     .avatar-box{
-        width: 100px;
-        height: 100px;
+        width: 200px;
+        min-height: 50px;
+        padding: 5px;
         border: 1px solid #666;
         img{
             width: 100%;
             display: block;
         }
+    }
+    .file-table-img{
+        width: 100%;
+        display: block;
     }
 </style>

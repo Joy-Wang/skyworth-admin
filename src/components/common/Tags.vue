@@ -1,7 +1,7 @@
 <template>
     <div class="tags" v-if="showTags">
         <ul>
-            <li class="tags-li" v-for="(item,index) in tagsList" :class="{'active': isActive(item.path)}" :key="index">
+            <li class="tags-li" v-for="(item,index) in tagsList" :class="{'active': isActive(item.path,index)}" :key="index">
                 <router-link :to="item.path" class="tags-li-title">
                     {{item.title}}
                 </router-link>
@@ -23,6 +23,7 @@
 </template>
 
 <script>
+    import $ from 'jquery'
     export default {
         data() {
             return {
@@ -30,7 +31,7 @@
             }
         },
         methods: {
-            isActive(path) {
+            isActive(path,index) {
                 return path === this.$route.path;
             },
             // 关闭单个标签
@@ -79,8 +80,15 @@
                 this.setTags(newValue);
             }
         },
-        created(){
+        created () {
+            let self = this
             this.setTags(this.$route);
+            eventBus.$on('todo', (params) => {
+                self.closeTags($('.tags-li.active').index())
+            })
+        },
+        beforeDestroy () {
+            eventBus.$off('todo');
         }
     }
 

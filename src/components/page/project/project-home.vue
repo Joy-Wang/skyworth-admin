@@ -8,14 +8,15 @@
                         <el-row :gutter="20">
                             <el-col :span="5">
                                 <el-form-item label="编码">
-                                    <el-input v-model="search.name" placeholder="请输入编码"></el-input>
+                                    <el-input v-model="searchCode" placeholder="请输入编码"></el-input>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="5">
                                 <el-form-item label="名称">
                                     <el-autocomplete
                                     popper-class="my-autocomplete"
-                                    v-model="state2"
+                                    v-model="searchName"
+                                    clearable
                                     :fetch-suggestions="querySearch"
                                     placeholder="请输入名称"
                                     @select="handleSelect">
@@ -25,7 +26,7 @@
                                             @click="handleIconClick">
                                         </i>
                                         <template slot-scope="{ item }">
-                                            <div class="name">{{ item.value }}</div>
+                                            <div class="name">{{ item.toseName }}</div>
                                         </template>
                                     </el-autocomplete>
                                 </el-form-item>
@@ -34,17 +35,17 @@
                                 <el-form-item label="客户">
                                     <el-autocomplete
                                     popper-class="my-autocomplete"
-                                    v-model="state3"
-                                    :fetch-suggestions="querySearch"
+                                    v-model="searchCust"
+                                    :fetch-suggestions="querySearchCust"
                                     placeholder="请输入客户"
-                                    @select="handleSelect">
+                                    @select="handleSelectCust">
                                         <i
                                             class="el-icon-edit el-input__icon"
                                             slot="suffix"
                                             @click="handleIconClick">
                                         </i>
                                         <template slot-scope="{ item }">
-                                            <div class="name">{{ item.value }}</div>
+                                            <div class="name">{{ item.toseUnionCustName }}</div>
                                         </template>
                                     </el-autocomplete>
                                 </el-form-item>
@@ -62,11 +63,11 @@
                         <el-pagination class="page-box"
                         @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
-                        :current-page="currentPage4"
-                        :page-sizes="[10, 20, 30, 40]"
-                        :page-size="10"
+                        :current-page="pageQuery.pageNum"
+                        :page-sizes="[10, 20, 30]"
+                        :page-size="pageQuery.pageSize"
                         layout="total, sizes, prev, pager, next, jumper"
-                        :total="40">
+                        :total="pageQuery.total">
                         </el-pagination>
                     </div>
                 </div>
@@ -77,111 +78,67 @@
                 </el-table-column>
                 <el-table-column label="编码" width="200" header-align="center">
                     <template slot-scope="scope">
-                        <a class="click-name" @click="manageProject(scope.row)">{{ scope.row.tose_code }}</a>
+                        <a class="click-name" @click="manageProject(scope.row.toseId)">{{ scope.row.toseCode }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="tose_name" label="名称" width="200" header-align="center">
+                <el-table-column prop="toseName" label="名称" width="200" header-align="center">
                 </el-table-column>
-                <el-table-column prop="client" label="客户" width="auto" header-align="center">
+                <el-table-column prop="toseUnionCustName" label="客户" width="auto" header-align="center">
                 </el-table-column>
-                <el-table-column prop="tose_version" label="版本" width="100" header-align="center">
+                <el-table-column prop="toseVersion" label="版本" width="100" header-align="center">
                 </el-table-column>
-                <el-table-column prop="tose_level" label="优先级" width="100" header-align="center">
+                <el-table-column prop="toseLevel" label="优先级" width="100" header-align="center">
                 </el-table-column>
                 <el-table-column label="状态" width="80" header-align="center" align="center">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.tose_status == 1" class="sky-blue">待提交</span>
-                        <span v-else-if="scope.row.tose_status == 2" class="sky-yellow">审核中</span>
-                        <span v-else-if="scope.row.tose_status == 3" class="sky-green">通过</span>
-                        <span v-else-if="scope.row.tose_status == 4" class="sky-red">不通过</span>
+                        <span v-if="scope.row.isenable == 1" class="sky-blue">有效</span>
+                        <span v-else-if="scope.row.isenable == 0" class="sky-red">无效</span>
                     </template>
                 </el-table-column>
             </el-table>
         </div>
-
-        <!-- 方案管理框 -->
-        <el-dialog title="方案管理" :visible.sync="editVisible" width="30%">
-            <el-form ref="ruleForm" label-width="80px" class="demo-ruleForm">
-                <el-form-item label="编码">
-                    <el-input v-model="projectEditData.tose_code" placeholder="请填写编码" disabled></el-input>
-                </el-form-item>
-                <el-form-item label="账号">
-                    <el-input v-model="projectEditData.tose_name" placeholder="请填写名称" disabled></el-input>
-                </el-form-item>
-                <el-form-item label="关联客户">
-                    <el-autocomplete
-                    popper-class="my-autocomplete"
-                    v-model="state3"
-                    :fetch-suggestions="querySearch"
-                    placeholder="请输入客户"
-                    @select="handleSelect">
-                        <i
-                            class="el-icon-edit el-input__icon"
-                            slot="suffix"
-                            @click="handleIconClick">
-                        </i>
-                        <template slot-scope="{ item }">
-                            <div class="name">{{ item.value }}</div>
-                        </template>
-                    </el-autocomplete>
-                </el-form-item>
-                <el-form-item label="优先级">
-                    <el-input v-model="projectEditData.tose_level" placeholder="请填写优先级"></el-input>
-                </el-form-item>
-                <el-form-item label="版本">
-                    <el-input v-model="projectEditData.tose_version" placeholder="请填写优版本"></el-input>
-                </el-form-item>
-                <el-form-item label="状态">
-                    <el-radio v-model="projectEditData.radio" label="1">启用</el-radio>
-                    <el-radio v-model="projectEditData.radio" label="2">停用</el-radio>
-                </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button type="danger" @click="editVisible = false">删 除</el-button>
-                <el-button type="primary" @click="editVisible = false">提 交</el-button>
-            </span>
-        </el-dialog>
     </div>
 </template>
 
 <script>
+    import $ from 'jquery'
+    import * as crud from '../../../../static/js/skyworth-crud'
     export default {
         data() {
             return {
-                url: './static/vuetable.json',
                 tableData: [],
-                cur_page: 1,
                 multipleSelection: [],
-                select_cate: '',
-                select_word: '',
-                del_list: [],
-                searchVisible: false,
-                editVisible: false,
-                delVisible: false,
                 projectEditData: {
-                    tose_name: '',
-                    tose_code: '',
-                    client: '',
-                    tose_level: '',
-                    status: '',
-                    radio: '',
-                    tose_version: ''
+                    toseName: '',
+                    toseCode: '',
+                    toseUnionCustName: '',
+                    toseLevel: '',
+                    isenable: '',
+                    toseVersion: ''
                 },
-                search: {
-                    name: ''
+                pageQuery: { // 分页
+                    pageNum: 1,
+                    pageSize: 10,
+                    total: 0
                 },
-                state1: '',
+                searchCode: '',
+                searchName: '',
+                searchCust: '',
                 state2: '',
                 state3: '',
-                radio: '1',
                 idx: -1
             }
         },
         created() {
+            let self = this
             this.getData();
+            eventBus.$on('projectGetList', () => {
+                self.getData()
+            })
         },
         mounted () {
-            this.restaurants = this.loadAll();
+            this.GetSchemeNameSug()
+            this.GetSchemeCustSug()
         },
         computed: {
             data() {
@@ -205,38 +162,115 @@
             }
         },
         methods: {
-            // 分页导航
+            // 分页导航-当前页
             handleCurrentChange(val) {
-                this.cur_page = val;
-                this.getData();
+                this.pageQuery.pageNum = val
+                this.getData()
             },
-            // 获取 easy-mock 的模拟数据
+            // 一页显示条目
+            handleSizeChange (val) {
+                this.pageQuery.pageSize = val
+                this.getData()
+            },
+            handleSelectionChange () {
+
+            },
+            // 获取主题数据
             getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.url = '../../../../static/vuetable.json'; // 模拟数据
-                this.$axios.get(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.projectList;
+                let self = this
+                let dataUrl = '/api/scheme/querySchemeList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
+                crud.skyworthGet({
+                    url: dataUrl,
+                    param: '',
+                    success: function (data) {
+                        self.tableData = data.list
+                        self.pageQuery.total = data.total
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 模糊搜索方案名称数据
+            GetSchemeNameSug () {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/scheme/GetSchemeNameSug',
+                    param: '',
+                    success: function (data) {
+                        self.restaurants = data
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 模糊搜索客户数据
+            GetSchemeCustSug () {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/scheme/GetSchemeCustSug',
+                    param: '',
+                    success: function (data) {
+                        self.restaurantsCust = data
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
                 })
             },
             // 查询
             search () {
-    
+                let self = this
+                let params = {toseCode: self.searchCode, toseName: self.searchName, toseUnionCustName: self.searchCust}
+                if (self.toseCode == '' && self.searchName == '' && self.searchCust == '') {
+                    self.getData()
+                } else {
+                    crud.skyworthGet({
+                        url: '/api/scheme/querySchemeList',
+                        param: params,
+                        success: function (data) {
+                            self.tableData = data.list
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                }
             },
-            // 修改框
-            manageProject (date) {
-                this.editVisible = true;
-                this.projectEditData = date
-                this.projectEditData.radio = date.status
+            // 修改
+            manageProject (id) {
+                this.$router.push({
+                    name: 'projectEdit'
+                })
+                this.setLocalStorage('toseId', id)
             },
             // 模糊搜索
             querySearch(queryString, cb) {
                 var restaurants = this.restaurants;
                 var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+                // 调用 callback 返回建议列表的数据
+                cb(results);
+            },
+            querySearchCust(queryString, cb) {
+                var restaurantsCust = this.restaurantsCust;
+                var results = queryString ? restaurantsCust.filter(this.createFilter(queryString)) : restaurantsCust;
                 // 调用 callback 返回建议列表的数据
                 cb(results);
             },
@@ -246,28 +280,12 @@
                 return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
                 };
             },
-            // 加载数据
-            loadAll() {
-                return [
-                { "value": "林丽" },
-                { "value": "张三" },
-                { "value": "王麻子" },
-                { "value": "刘武" },
-                { "value": "胡德" },
-                { "value": "欧阳吉吉" },
-                { "value": "姑苏慕容复" },
-                { "value": "王语嫣" },
-                { "value": "小飞鼠" },
-                { "value": "大胖" },
-                { "value": "孟峰" },
-                { "value": "吴彦祖" },
-                { "value": "林丹" },
-                { "value": "陈冠希" },
-                { "value": "周杰伦" }
-                ];
-            },
             handleSelect(item) {
-                console.log(item);
+                this.searchName = item.toseName
+                this.searchNameCode = item.toseCode
+            },
+            handleSelectCust(item) {
+                this.searchCust = item.toseUnionCustName
             },
             handleIconClick(ev) {
                 console.log(ev);
@@ -282,45 +300,6 @@
             },
             filterTag(value, row) {
                 return row.tag === value;
-            },
-            handleEdit(index, row) {
-                this.idx = index;
-                const item = this.tableData[index];
-                this.form = {
-                    name: item.name,
-                    date: item.date,
-                    address: item.address
-                }
-                this.editVisible = true;
-            },
-            handleDelete(index, row) {
-                this.idx = index;
-                this.delVisible = true;
-            },
-            delAll() {
-                const length = this.multipleSelection.length;
-                let str = '';
-                this.del_list = this.del_list.concat(this.multipleSelection);
-                for (let i = 0; i < length; i++) {
-                    str += this.multipleSelection[i].name + ' ';
-                }
-                this.$message.error('删除了' + str);
-                this.multipleSelection = [];
-            },
-            handleSelectionChange(val) {
-                this.multipleSelection = val;
-            },
-            // 保存编辑
-            saveEdit() {
-                this.$set(this.tableData, this.idx, this.form);
-                this.editVisible = false;
-                this.$message.success(`修改第 ${this.idx+1} 行成功`);
-            },
-            // 确定删除
-            deleteRow(){
-                this.tableData.splice(this.idx, 1);
-                this.$message.success('删除成功');
-                this.delVisible = false;
             }
         }
     }

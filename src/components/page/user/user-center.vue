@@ -36,11 +36,11 @@
                         <el-pagination class="page-box"
                         @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
-                        :current-page="currentPage"
-                        :page-sizes="[10, 20, 30, 40]"
-                        :page-size="10"
+                        :current-page="pageQuery.pageNum"
+                        :page-sizes="[10, 20, 30]"
+                        :page-size="pageQuery.pageSize"
                         layout="total, sizes, prev, pager, next, jumper"
-                        :total="40">
+                        :total="pageQuery.total">
                         </el-pagination>
                     </div>
                 </div>
@@ -75,51 +75,56 @@
         </div>
 
         <!-- 用户信息管理窗口 -->
-        <el-dialog :title=" isAdd ? '用户新增' : '用户修改'" :visible.sync="editVisible" width="30%">
-            <el-form :model="ruleForm" ref="ruleForm" label-width="80px" class="demo-ruleForm">
-                <el-form-item label="名称">
+        <el-dialog :title=" isAdd ? '用户新增' : '用户修改'" :visible.sync="editVisible" width="30%" ref="dialog" @close="close(ruleForm)">
+            <el-form :model="ruleForm" ref="ruleForm" label-width="90px" class="demo-ruleForm">
+                <el-form-item label="名称：" class="required-label">
                     <el-input v-model="ruleForm.tourName" placeholder="请填写名字" :disabled="isAdd ? false : true" maxlength="40"></el-input>
                 </el-form-item>
-                <el-form-item label="账号">
+                <el-form-item label="账号：" class="required-label">
                     <el-input v-model="ruleForm.tourAccount" placeholder="请填写账号" :disabled="isAdd ? false : true" maxlength="20"></el-input>
                 </el-form-item>
-                <el-form-item label="密码" v-if="isAdd">
-                    <el-input v-model="ruleForm.tourPassword" placeholder="请填写密码" maxlength="30"></el-input>
+                <el-form-item label="密码：" v-if="isAdd" class="required-label">
+                    <el-input v-model="ruleForm.tourPassword" placeholder="请填写密码" maxlength="40"></el-input>
                 </el-form-item>
-                <el-form-item label="类型" v-if="isAdd">
+                <el-form-item label="类型：" v-if="isAdd" class="required-label">
                     <el-select v-model="ruleForm.tourType" placeholder="请选择类型">
                         <el-option
                         v-for="item in userType"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
+                        :key="item.codeCode"
+                        :label="item.codeName"
+                        :value="item.codeCode">
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="英文名">
+                <el-form-item label="英文名：">
                     <el-input v-model="ruleForm.tourEnglishName" placeholder="请填写英文名" maxlength="30"></el-input>
                 </el-form-item>
-                <el-form-item label="性别">
+                <el-form-item label="状态：" class="required-label">
+                    <el-radio v-model="ruleForm.isenable" :label="1">生效</el-radio>
+                    <el-radio v-model="ruleForm.isenable" :label="0">失效</el-radio>
+                </el-form-item>
+                <el-form-item label="性别：" class="required-label">
                     <el-radio v-model="ruleForm.tourSex" :label="1">男</el-radio>
                     <el-radio v-model="ruleForm.tourSex" :label="2">女</el-radio>
                 </el-form-item>
-                <el-form-item label="电话">
+                <el-form-item label="电话：">
                     <el-input v-model="ruleForm.tourTelphone" placeholder="请填写电话号码" maxlength="20"></el-input>
                 </el-form-item>
-                <el-form-item prop="email" label="邮箱">
+                <el-form-item prop="email" label="邮箱：">
                     <el-input v-model="ruleForm.tourMail" placeholder="请填写e-mail" maxlength="25"></el-input>
                 </el-form-item>
-                <el-form-item prop="address" label="地址">
+                <el-form-item prop="address" label="地址：">
                     <el-input v-model="ruleForm.tourAddress" placeholder="请填写地址" maxlength="50"></el-input>
                 </el-form-item>
-                <el-form-item prop="email" label="传真">
+                <el-form-item prop="email" label="传真：">
                     <el-input v-model="ruleForm.tourFox" placeholder="请填写传真" maxlength="20"></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
+                <el-button type="" @click="editVisible = false">取 消</el-button>
                 <el-button v-if="isAdd" type="primary" @click="addUser()">提 交</el-button>
                 <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
-                <el-button type="danger" @click="deleteUser()">删 除</el-button>
+                <el-button v-if="!isAdd" type="danger" @click="deleteUser()">删 除</el-button>
             </span>
         </el-dialog>
     </div>
@@ -133,9 +138,6 @@
             return {
                 url: './static/vuetable.json',
                 tableData: [],
-                radio: '1',
-                cur_page: 1,
-                currentPage: 1,
                 multipleSelection: [],
                 select_cate: '',
                 select_word: '',
@@ -150,12 +152,12 @@
                     userType: ''
                 },
                 ruleForm: {
-                    isenable: '',
-                    tourType: '',
+                    isenable: 1,
+                    tourType: '1',
                     tourAccount: '',
                     tourName: '',
                     tourEnglishName: '',
-                    tourSex: '',
+                    tourSex: 1,
                     tourAddress: '',
                     tourTelphone: '',
                     tourMail: '',
@@ -164,17 +166,13 @@
                     tourTypeName: '',
                     tourPassword: ''
                 },
-                userType: [{
-                    value: '1',
-                    label: '普通用户'
-                },{
-                    value: '2',
-                    label: '会员用户'
-                },{
-                    value: '3',
-                    label: '管理员'
-                }],
-                addForm: [],
+                userType: [], // 用户类型
+                pageQuery: { // 分页
+                    pageNum: 1,
+                    pageSize: 10,
+                    total: 0
+                },
+                editForm: [], // 保存修改
                 restaurants: [],
                 searchName: '',
                 searchAccount: '',
@@ -187,7 +185,8 @@
         },
         mounted() {
             this.querySearchData()
-            this.addForm = this.ruleForm
+            this.$refs.dialog.close()
+            this.getSelectData('user_type')
         },
         computed: {
             data() {
@@ -211,13 +210,15 @@
             }
         },
         methods: {
-            // 分页导航
+            // 分页导航-当前页
             handleCurrentChange(val) {
-                this.cur_page = val
+                this.pageQuery.pageNum = val
                 this.getData()
             },
-            handleSizeChange () {
-
+            // 一页显示条目
+            handleSizeChange (val) {
+                this.pageQuery.pageSize = val
+                this.getData()
             },
             handleSelectionChange () {
 
@@ -225,11 +226,13 @@
             // 获取用户数据
             getData() {
                 let self = this
+                let dataUrl = '/api/user/queryUserList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
                 crud.skyworthGet({
-                    url: '/api/user/queryUserList',
+                    url: dataUrl,
                     param: '',
                     success: function (data) {
                         self.tableData = data.list
+                        self.pageQuery.total = data.total
                     },
                     error: function (data) {
                         self.$message({
@@ -243,35 +246,65 @@
             // 搜索
             searchUser () {
                 let self = this
+                console.log(this.searchName)
                 let params = {tourAccount: self.searchAccount}
-                crud.skyworthGet({
-                    url: '/api/user/queryUserList',
-                    param: params,
-                    success: function (data) {
-                        self.tableData = data.list
-                    },
-                    error: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'error',
-                            center: true
-                        })
-                    }
-                })
+                if (this.searchName == '') {
+                    self.getData()
+                } else {
+                    crud.skyworthGet({
+                        url: '/api/user/queryUserList',
+                        param: params,
+                        success: function (data) {
+                            self.tableData = data.list
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                }
             },
             // 打开用户信息管理窗口
             editInformation (view, data) {
                 let self = this
                 data ? data : ''
                 if ( view ) { // 新增
-                    self.ruleForm = self.addForm
+                    self.ruleForm.isenable = 1
+                    self.ruleForm.tourSex = 1
+                    self.ruleForm.tourType = '1'
+                    for (let key in self.ruleForm) { // 新增清空数据列表
+                        if (key != 'isenable' && key != 'tourSex' && key != 'tourType') {
+                            delete self.ruleForm[key]
+                        }
+                    }
                     self.isAdd = view
                 } else { // 修改
+                    let params = {tourId: data.tourId}
+                    crud.skyworthGet({ // 通过id获取当前用户信息
+                        url: '/api/user/findUserById',
+                        param: params,
+                        success: function (data) {
+                            self.ruleForm = data
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
                     self.isAdd = view
-                    this.ruleForm = data
-                    console.log(this.ruleForm)
                 }
                 this.editVisible = true
+            },
+            // 关闭
+            close (formName) {
+                console.log(formName)
+                // this.$refs[formName].resetFields()
             },
             // 修改
             updateInfo () {
@@ -308,6 +341,7 @@
                             type: 'success',
                             center: true
                         })
+                        self.getData()
                         self.editVisible = false
                     },
                     error: function (data) {
@@ -368,6 +402,24 @@
                     }
                 })
             },
+            // 获取下拉列表数据
+            getSelectData (type) {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/public/queryBaseType',
+                    param: {codeType: type},
+                    success: function (data) {
+                            self.userType = data
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
             // 模糊搜索
             querySearch(queryString, cb) {
                 var restaurants = this.restaurants;
@@ -377,9 +429,9 @@
             },
             // 清楚筛选
             createFilter(queryString) {
-                return (restaurant) => {
-                return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-                };
+                // return (restaurant) => {
+                //     return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                // };
             },
             // 模糊搜索数据来源
             querySearchData() {
@@ -402,7 +454,6 @@
             handleSelect(item) {
                 this.searchName = item.tourName
                 this.searchAccount = item.tourAccount
-                console.log(item);
             },
             handleIconClick(ev) {
                 console.log(ev);

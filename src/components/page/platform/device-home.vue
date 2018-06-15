@@ -6,11 +6,11 @@
                 <div>
                     <el-form ref="form">
                         <el-row :gutter="20">
-                            <el-col :span="6">
+                            <el-col :span="7">
                                 <el-form-item label="名称 / 编码" label-width="80px">
                                     <el-autocomplete
                                     popper-class="my-autocomplete"
-                                    v-model="state1"
+                                    v-model="searchName"
                                     :fetch-suggestions="querySearch"
                                     placeholder="请输入名称"
                                     @select="handleSelect">
@@ -20,25 +20,25 @@
                                             @click="handleIconClick">
                                         </i>
                                         <template slot-scope="{ item }">
-                                            <div class="name">{{ item.value }}({{ item.value }})</div>
+                                            <div class="name">{{ item.tourName }}</div>
                                         </template>
                                     </el-autocomplete>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="5">
                                 <el-form-item label="国家" label-width="40px">
-                                    <el-select v-model="country" clearable placeholder="请选择国家">
+                                    <el-select v-model="UCountry" clearable placeholder="请选择国家">
                                         <el-option
-                                        v-for="item in DeviceCountry"
-                                        :key="item.value"
-                                        :label="item.label"
-                                        :value="item.value">
+                                        v-for="item in country"
+                                        :key="item.codeCode"
+                                        :label="item.codeName"
+                                        :value="item.codeCode">
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
                             </el-col>
                             <el-col :span="5">
-                                <el-button type="primary" icon="search" @click="search">查询</el-button>
+                                <el-button type="primary" icon="search" @click="searchDevice()">查询</el-button>
                                 <el-button type="primary" icon="search" @click="manageDevice(true)">新增</el-button>
                             </el-col>
                         </el-row>
@@ -50,11 +50,11 @@
                         <el-pagination class="page-box"
                         @size-change="handleSizeChange"
                         @current-change="handleCurrentChange"
-                        :current-page="currentPage4"
-                        :page-sizes="[10, 20, 30, 40]"
-                        :page-size="10"
+                        :current-page="pageQuery.pageNum"
+                        :page-sizes="[10, 20, 30]"
+                        :page-size="pageQuery.pageSize"
                         layout="total, sizes, prev, pager, next, jumper"
-                        :total="40">
+                        :total="pageQuery.total">
                         </el-pagination>
                     </div>
                 </div>
@@ -63,109 +63,117 @@
             <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="toei_equipment_name" label="名称" width="150" header-align="center">
+                <el-table-column prop="toeiEquipmentName" label="名称" width="150" header-align="center">
                 </el-table-column>
                 <el-table-column label="编码" width="150" header-align="center">
                     <template slot-scope="scope">
-                        <a class="click-name" @click="manageDevice(false, scope.row)">{{ scope.row.toei_equipment_code }}</a>
+                        <a class="click-name" @click="manageDevice(false, scope.row)">{{ scope.row.toeiEquipmentCode }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="toei_equipment_country" label="使用国家" width="100" header-align="center">
+                <el-table-column prop="toeiEquipmentCountry" label="使用国家" width="100" header-align="center">
                 </el-table-column>
-                <el-table-column prop="toei_default_scheme" label="默认主题" width="150" header-align="center">
+                <el-table-column prop="toeiDefaultScheme" label="默认主题" width="150" header-align="center">
                 </el-table-column>
-                <el-table-column prop="toei_useing_scheme" label="当前主题" width="150" header-align="center">
+                <el-table-column prop="toeiUseingScheme" label="当前主题" width="150" header-align="center">
                 </el-table-column>
-                <el-table-column prop="toei_remark" label="备注" width="auto" header-align="center">
+                <el-table-column prop="toeiRemark" label="备注" width="auto" header-align="center">
                 </el-table-column>
                 <el-table-column label="状态" width="80" header-align="center" align="center">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.status == '通过'" class="sky-green">{{ scope.row.status }}</span>
-                        <span v-else-if="scope.row.status == '未通过'" class="sky-red">{{ scope.row.status }}</span>
-                        <span v-else-if="scope.row.status == '待审核'" class="sky-yellow">{{ scope.row.status }}</span>
+                        <span :class="scope.row.isenable == '1' ? 'sky-green' : 'sky-red'">{{ scope.row.isenable ? '有效' : '无效' }}</span>
                     </template>
                 </el-table-column>
             </el-table>
         </div>
 
         <!-- 设备管理框 -->
-        <el-dialog title="设备管理" :visible.sync="manageDeviceVisible" width="50%">
-            <el-form label-width="80px">
-                <el-form-item label="编码">
-                    <el-input v-if="isAdd" v-model="manageDeviceData.toei_equipment_code" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A"></el-input>
-                    <el-input v-if="!isAdd" v-model="manageDeviceData.toei_equipment_code" disabled placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A"></el-input>
+        <el-dialog :title=" isAdd ? '设备新增' : '设备修改'" :visible.sync="manageDeviceVisible" width="50%">
+            <el-form :model="manageDeviceData" label-width="100px">
+                <el-form-item label="编码：" class="required-label">
+                    <el-input v-if="isAdd" v-model="manageDeviceData.toeiEquipmentCode" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="30"></el-input>
+                    <el-input v-if="!isAdd" v-model="manageDeviceData.toeiEquipmentCode" disabled placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="30"></el-input>
                 </el-form-item>
-                <el-form-item label="名称">
-                    <el-input v-model="manageDeviceData.toei_equipment_name" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001"></el-input>
+                <el-form-item label="名称：" class="required-label">
+                    <el-input v-model="manageDeviceData.toeiEquipmentName" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001" maxlength="30"></el-input>
                 </el-form-item>
                 <el-row>
-                    <el-col :span="8">
-                        <el-form-item label="机型">
-                            <el-select v-model="manageDeviceData.toei_equipment_type" placeholder="请选择机型">
+                    <el-col :span="12">
+                        <el-form-item label="机型：" class="required-label">
+                            <el-select v-model="manageDeviceData.toeiEquipmentType" @change="isAdd ? selectChange() : ''" placeholder="请选择机型">
                                 <el-option
-                                v-for="item in DeviceType1"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
+                                v-for="item in equipType"
+                                :key="item.codeCode"
+                                :label="item.codeName"
+                                :value="item.codeCode">
                                 </el-option>
                             </el-select>
                         </el-form-item>
                     </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="机芯">
-                            <el-select v-model="manageDeviceData.toei_equipment_core" placeholder="请选择机芯">
+                    <el-col :span="12">
+                        <el-form-item label="机芯：" class="required-label">
+                            <el-select v-model="manageDeviceData.toeiEquipmentCore" @change="isAdd ? selectChange() : ''" placeholder="请选择机芯">
                                 <el-option
-                                v-for="item in DeviceType2"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="使用国家">
-                            <el-select v-model="manageDeviceData.toei_equipment_country" placeholder="请选择国家">
-                                <el-option
-                                v-for="item in DeviceCountry"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
+                                v-for="item in equipCore"
+                                :key="item.codeCode"
+                                :label="item.codeName"
+                                :value="item.codeCode">
                                 </el-option>
                             </el-select>
                         </el-form-item>
                     </el-col>
                 </el-row>
-                <el-form-item label="默认主题">
-                    <el-input v-model="manageDeviceData.toei_default_scheme"></el-input>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="使用国家：" class="required-label">
+                            <el-select v-model="manageDeviceData.toeiEquipmentCountry" @change="isAdd ? selectChange() : ''" placeholder="请选择国家">
+                                <el-option
+                                v-for="item in country"
+                                :key="item.codeCode"
+                                :label="item.codeName"
+                                :value="item.codeCode">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-form-item label="默认主题：">
+                    <p v-if="isAdd">{{defaultScheme}}</p>
+                    <el-input v-else v-model="manageDeviceData.toeiDefaultScheme"></el-input>
                 </el-form-item>
-                <el-form-item label="当前主题">
-                    <el-input v-model="manageDeviceData.toei_useing_scheme"></el-input>
+                <el-form-item label="当前主题：">
+                    <el-input v-model="manageDeviceData.toeiUseingScheme"></el-input>
                 </el-form-item>
-                <el-form-item label="备注">
-                    <el-input type="textarea"
+                <el-form-item label="状态：" class="required-label">
+                    <el-radio v-model="manageDeviceData.isenable" :label="1">生效</el-radio>
+                    <el-radio v-model="manageDeviceData.isenable" :label="0">失效</el-radio>
+                </el-form-item>
+                <el-form-item label="备注：">
+                    <el-input 
+                        type="textarea"
+                        maxlength="100"
                         :rows="2"
                         placeholder="请输入内容"
-                        v-model="manageDeviceData.toei_remark">
+                        v-model="manageDeviceData.toeiRemark">
                     </el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="manageDeviceVisible = false">取 消</el-button>
-                <el-button type="danger" @click="manageDeviceVisible = false">删 除</el-button>
-                <el-button type="primary" @click="manageDeviceVisible = false">提 交</el-button>
+                <el-button type="" @click="manageDeviceVisible = false">取 消</el-button>
+                <el-button v-if="isAdd" type="primary" @click="addDevice()">提 交</el-button>
+                <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
+                <el-button v-if="!isAdd" type="danger" @click="deleteDevice()">删 除</el-button>
             </span>
         </el-dialog>
     </div>
 </template>
 
 <script>
+    import * as crud from '../../../../static/js/skyworth-crud'
     export default {
         data() {
             return {
                 url: './static/vuetable.json',
                 tableData: [],
-                cur_page: 1,
                 multipleSelection: [],
                 select_cate: '',
                 select_word: '',
@@ -174,87 +182,31 @@
                 manageDeviceVisible: false,
                 delVisible: false,
                 isAdd: true,
-                country: '',
+                UCountry: '',
+                restaurants: [],
+                searchName: '',
+                searchCode: '',
+                equipCore: [], // 机芯
+                equipType: [], // 机型
+                country: [], // 国家
+                defaultScheme: '',
                 manageDeviceData: {
-                    toei_equipment_name: '',
-                    toei_equipment_code: '',
-                    toei_equipment_type: '',
-                    toei_equipment_core: '',
-                    toei_equipment_country: '',
-                    toei_default_scheme: '',
-                    toei_useing_scheme: '',
-                    status: '',
-                    toei_remark: ''
+                    toeiEquipmentName: '',
+                    toeiEquipmentCode: '',
+                    toeiEquipmentType: '',
+                    toeiEquipmentCore: '',
+                    toeiEquipmentCountry: '',
+                    toeiDefaultScheme: '',
+                    toeiUseingScheme: '',
+                    isenable : 1,
+                    toeiRemark: '',
+                    toeiId: ''
                 },
-                state1: '',
-                state2: '',
-                state3: '',
-                DeviceType1: [ // 机型
-                    {
-                        value: '1',
-                        label: 'U1'
-                    }, 
-                    {
-                        value: '2',
-                        label: 'U2'
-                    }, 
-                    {
-                        value: '3',
-                        label: 'U3'
-                    }, 
-                    {
-                        value: '4',
-                        label: 'U4'
-                    }, 
-                    {
-                        value: '5',
-                        label: 'U5'
-                    }
-                ],
-                DeviceType2: [ // 机芯
-                    {
-                        value: '1',
-                        label: 'U7583'
-                    }, 
-                    {
-                        value: '2',
-                        label: '67SHI'
-                    }, 
-                    {
-                        value: '3',
-                        label: 'BANHA'
-                    }, 
-                    {
-                        value: '4',
-                        label: 'SJK34'
-                    }, 
-                    {
-                        value: '5',
-                        label: 'VMLKSH'
-                    }
-                ],
-                DeviceCountry: [ // 国家
-                    {
-                        value: '1',
-                        label: '印度'
-                    }, 
-                    {
-                        value: '2',
-                        label: '埃及'
-                    }, 
-                    {
-                        value: '3',
-                        label: '阿富汗'
-                    }, 
-                    {
-                        value: '4',
-                        label: '南非'
-                    }, 
-                    {
-                        value: '5',
-                        label: '巴基斯坦'
-                    }
-                ],
+                pageQuery: { // 分页
+                    pageNum: 1,
+                    pageSize: 10,
+                    total: 0
+                },
                 idx: -1
             }
         },
@@ -262,7 +214,10 @@
             this.getData();
         },
         mounted () {
-            this.restaurants = this.loadAll();
+            this.querySearchData()
+            this.getSelectData('country')
+            this.getSelectData('equip_type')
+            this.getSelectData('equip_core')
         },
         computed: {
             data() {
@@ -286,34 +241,217 @@
             }
         },
         methods: {
-            // 分页导航
+            // 分页导航-当前页
             handleCurrentChange(val) {
-                this.cur_page = val;
+                this.pageQuery.pageNum = val;
                 this.getData();
             },
-            // 获取 easy-mock 的模拟数据
+            // 每页条目数
+            handleSizeChange (val) {
+                this.pageQuery.pageSize = val;
+                this.getData();
+            },
+            // 获取列表数据
             getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.url = '../../../../static/vuetable.json'; // 模拟数据
-                this.$axios.get(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.deviceList;
+                let self = this
+                let dataUrl = '/api/equip/queryEquipList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize                
+                crud.skyworthGet({
+                    url: dataUrl,
+                    param: '',
+                    success: function (data) {
+                        self.tableData = data.list
+                        self.pageQuery.total = data.total
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
                 })
             },
-            // 设备查询
-            search () {
-    
+            // 获取下拉列表数据
+            getSelectData (type) {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/public/queryBaseType',
+                    param: {codeType: type},
+                    success: function (data) {
+                        if (type == 'country') {
+                            self.country = data
+                        } else if (type == 'equip_core') {
+                            self.equipCore = data
+                        } else if (type == 'equip_type') {
+                            self.equipType = data
+                        }
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
             },
-            // 设备新增/设备管理
-            manageDevice (add, data) {
-                if (!data) data = '' 
-                this.isAdd = add
-                this.manageDeviceVisible = true;
-                this.manageDeviceData = data
+            // 搜索
+            searchDevice () {
+                let self = this
+                let params = {toeiEquipmentCode: self.searchCode}
+                if (this.searchName == '') {
+                    self.getData()
+                } else {
+                    crud.skyworthGet({
+                        url: '/api/equip/queryEquipList',
+                        param: params,
+                        success: function (data) {
+                            self.tableData = data.list
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                }
+            },
+            // 打开设备管理窗口
+            manageDevice (view, data) {
+                let self = this
+                data ? data : ''
+                if ( view ) { // 新增
+                    self.manageDeviceData.isenable = 1
+                    // self.manageDeviceData.toeiEquipmentType = '8R92T'
+                    // self.manageDeviceData.toeiEquipmentCore = 'U5'
+                    // self.manageDeviceData.toeiEquipmentCountry = 'India'
+                    for (let key in self.manageDeviceData) { // 新增清空数据列表
+                        // if (key != 'isenable' && key != 'toeiEquipmentType' && key != 'toeiEquipmentCore' && key != 'toeiEquipmentCountry') {
+                        if (key != 'isenable') {
+                            delete self.manageDeviceData[key]
+                        }
+                    }
+                    self.isAdd = view
+                } else { // 修改
+                    let params = {toeiId: data.toeiId}
+                    crud.skyworthGet({ // 通过id获取当前设备信息
+                        url: '/api/equip/findEquipById',
+                        param: params,
+                        success: function (data) {
+                            self.manageDeviceData = data
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                    self.isAdd = view
+                }
+                this.manageDeviceVisible = true
+            },
+            // 修改
+            updateInfo () {
+                let self = this
+                let parmams = this.manageDeviceData
+                crud.skyworthComplexUpdate({
+                    url: '/api/equip/updateEquip',
+                    param: parmams,
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageDeviceVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 新增
+            addDevice () {
+                let self = this
+                let parmams = this.manageDeviceData
+                crud.skyworthComplexSave({
+                    url: '/api/equip/addEquip',
+                    param: parmams,
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageDeviceVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 删除设备
+            deleteDevice () {
+                let self = this
+                crud.skyworthDelete({
+                    url: '/api/equip/deleteEquip' + '?toeiId=' + self.manageDeviceData.toeiId,
+                    param: '',
+                    success: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'success',
+                            center: true
+                        })
+                        self.getData()
+                        self.manageDeviceVisible = false
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
+            },
+            // 下拉框选项值改变，获取默认主题
+            selectChange () {
+                let self = this
+                if (this.manageDeviceData.toeiEquipmentType != '' && this.manageDeviceData.toeiEquipmentCore != '' && this.manageDeviceData.toeiEquipmentCountry != '') {
+                    let parmams = {
+                        toeiEquipmentCore: self.manageDeviceData.toeiEquipmentCore,
+                        toeiEquipmentType: self.manageDeviceData.toeiEquipmentType,
+                        toeiEquipmentCountry: self.manageDeviceData.toeiEquipmentCountry
+                    }
+                    crud.skyworthGet({
+                        url: '/api/equip/getDefaultScheme',
+                        param: parmams,
+                        success: function (data) {
+                            self.defaultScheme = data.msg
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                }
             },
             // 模糊搜索
             querySearch(queryString, cb) {
@@ -324,31 +462,31 @@
             },
             // 清楚筛选
             createFilter(queryString) {
-                return (restaurant) => {
-                return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-                };
+                // return (restaurant) => {
+                //     return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                // };
             },
-            // 加载数据
-            loadAll() {
-                return [
-                { "value": "林丽" },
-                { "value": "张三" },
-                { "value": "王麻子" },
-                { "value": "刘武" },
-                { "value": "胡德" },
-                { "value": "欧阳吉吉" },
-                { "value": "姑苏慕容复" },
-                { "value": "王语嫣" },
-                { "value": "小飞鼠" },
-                { "value": "大胖" },
-                { "value": "孟峰" },
-                { "value": "吴彦祖" },
-                { "value": "林丹" },
-                { "value": "陈冠希" },
-                { "value": "周杰伦" }
-                ];
+            // 模糊搜索数据来源
+            querySearchData() {
+                let self = this
+                crud.skyworthGet({
+                    url: '/api/equip/queryEquipByKey',
+                    param: '',
+                    success: function (data) {
+                        self.restaurants = data
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
             },
             handleSelect(item) {
+                this.searchName = item.tourName
+                this.searchCode = item.tourAccount
                 console.log(item);
             },
             handleIconClick(ev) {
@@ -399,6 +537,9 @@
                 this.tableData.splice(this.idx, 1);
                 this.$message.success('删除成功');
                 this.delVisible = false;
+            },
+            handleSizeChange () {
+
             }
         }
     }

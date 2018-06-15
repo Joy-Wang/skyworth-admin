@@ -205,3 +205,16 @@ a {
 .no-label .el-radio__label{
     display: none;
 }
+
+.required-label .el-form-item__label::before{
+    content: '*';
+    color: #f56c6c;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.file-upload .el-upload--text{
+    width: auto;
+    height: auto;
+    border: none;
+}

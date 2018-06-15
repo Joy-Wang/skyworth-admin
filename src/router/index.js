@@ -47,14 +47,21 @@ export default new Router({
                     name: 'project',
                     path: '/project',
                     component: resolve => require(['../components/page/project/project-home.vue'], resolve),
-                    meta: { title: '方案' }
+                    meta: { title: '方案管理' }
                 },
                 {
-                    // 方案新增
+                    // 新增方案
                     name: 'projectAdd',
                     path: '/projectAdd',
                     component: resolve => require(['../components/page/project/project-add.vue'], resolve),
                     meta: { title: '新增方案' }
+                },
+                {
+                    // 修改方案
+                    name: 'projectEdit',
+                    path: '/projectEdit',
+                    component: resolve => require(['../components/page/project/project-edit.vue'], resolve),
+                    meta: { title: '修改方案' }
                 },
                 {
                     // 素材管理
