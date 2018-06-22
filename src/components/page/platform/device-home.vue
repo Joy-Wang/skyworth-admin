@@ -87,7 +87,7 @@
         </div>
 
         <!-- 设备管理框 -->
-        <el-dialog :title=" isAdd ? '设备新增' : '设备修改'" :visible.sync="manageDeviceVisible" width="50%">
+        <el-dialog :title=" isAdd ? '设备新增' : '设备修改'" :visible.sync="manageDeviceVisible" width="50%" @close="cancelManage()" :close-on-click-modal='false'>
             <el-form :model="manageDeviceData" label-width="100px">
                 <el-form-item label="编码：" class="required-label">
                     <el-input v-if="isAdd" v-model="manageDeviceData.toeiEquipmentCode" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="30"></el-input>
@@ -158,7 +158,7 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button type="" @click="manageDeviceVisible = false">取 消</el-button>
+                <el-button type="" @click="cancelManage()">取 消</el-button>
                 <el-button v-if="isAdd" type="primary" @click="addDevice()">提 交</el-button>
                 <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
                 <el-button v-if="!isAdd" type="danger" @click="deleteDevice()">删 除</el-button>
@@ -327,12 +327,6 @@
                     // self.manageDeviceData.toeiEquipmentType = '8R92T'
                     // self.manageDeviceData.toeiEquipmentCore = 'U5'
                     // self.manageDeviceData.toeiEquipmentCountry = 'India'
-                    for (let key in self.manageDeviceData) { // 新增清空数据列表
-                        // if (key != 'isenable' && key != 'toeiEquipmentType' && key != 'toeiEquipmentCore' && key != 'toeiEquipmentCountry') {
-                        if (key != 'isenable') {
-                            delete self.manageDeviceData[key]
-                        }
-                    }
                     self.isAdd = view
                 } else { // 修改
                     let params = {toeiId: data.toeiId}
@@ -427,6 +421,16 @@
                         })
                     }
                 })
+            },
+            // 取消
+            cancelManage () {
+                let self = this
+                this.manageDeviceVisible = false
+                for (let key in self.manageDeviceData) { // 清空数据列表
+                    if (key != 'isenable') {
+                        delete self.manageDeviceData[key]
+                    }
+                }
             },
             // 下拉框选项值改变，获取默认主题
             selectChange () {

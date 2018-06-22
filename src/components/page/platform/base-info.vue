@@ -72,7 +72,7 @@
         </div>
 
         <!-- 基础信息管理框 -->
-        <el-dialog title="基础信息管理" :visible.sync="manageInfoVisible" width="35%">
+        <el-dialog title="基础信息管理" :visible.sync="manageInfoVisible" width="35%" @close='cancelManage()' :close-on-click-modal='false'>
             <el-form :model="manageBaseInfoData" label-width="80px">
                 <el-form-item label="编码：" class="required-label">
                     <el-input v-if="isAdd" v-model="manageBaseInfoData.codeCode" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="20"></el-input>
@@ -111,7 +111,7 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="manageInfoVisible = false">取 消</el-button>
+                <el-button @click="cancelManage()">取 消</el-button>
                 <el-button v-if="isAdd" type="primary" @click="addBaseInfo()">提 交</el-button>
                 <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
                 <el-button v-if="!isAdd" type="danger" @click="deleteBaseInfo()">删 除</el-button>
@@ -162,7 +162,6 @@
             this.getData();
         },
         mounted () {
-            this.restaurants = this.loadAll();
             this.getSelectData('base_type')
         },
         computed: {
@@ -248,11 +247,6 @@
                 if ( view ) { // 新增
                     self.manageBaseInfoData.isenable = 1
                     self.manageBaseInfoData.codeTypeName = 'base_type'
-                    for (let key in self.manageBaseInfoData) { // 新增清空数据列表
-                        if (key != 'isenable' && key != 'codeTypeName') {
-                            delete self.manageBaseInfoData[key]
-                        }
-                    }
                     self.isAdd = view
                 } else { // 修改
                     let params = {codeId: data.codeId}
@@ -348,11 +342,21 @@
                     }
                 })
             },
+            // 取消
+            cancelManage () {
+                let self = this
+                this.manageInfoVisible = false
+                for (let key in self.manageBaseInfoData) { // 清空数据列表
+                    if (key != 'isenable' && key != 'codeTypeName') {
+                        delete self.manageBaseInfoData[key]
+                    }
+                }
+            },
             // 获取下拉列表数据
             getSelectData (type) {
                 let self = this
                 crud.skyworthGet({
-                    url: '/api/queryBaseType',
+                    url: '/api/public/queryBaseType',
                     param: {codeType: type},
                     success: function (data) {
                         self.infoType = data
@@ -378,26 +382,6 @@
                 return (restaurant) => {
                 return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
                 };
-            },
-            // 加载数据
-            loadAll() {
-                return [
-                { "value": "林丽" },
-                { "value": "张三" },
-                { "value": "王麻子" },
-                { "value": "刘武" },
-                { "value": "胡德" },
-                { "value": "欧阳吉吉" },
-                { "value": "姑苏慕容复" },
-                { "value": "王语嫣" },
-                { "value": "小飞鼠" },
-                { "value": "大胖" },
-                { "value": "孟峰" },
-                { "value": "吴彦祖" },
-                { "value": "林丹" },
-                { "value": "陈冠希" },
-                { "value": "周杰伦" }
-                ];
             },
             handleSelect(item) {
                 console.log(item);

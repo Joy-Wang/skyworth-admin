@@ -111,7 +111,7 @@
         </div>
         
         <!-- 素材管理框 -->
-        <el-dialog :title=" isAdd ? '新增素材' : '修改素材'" :visible.sync="manageFileVisible" width="40%">
+        <el-dialog :title=" isAdd ? '新增素材' : '修改素材'" :visible.sync="manageFileVisible" width="40%" @close='closeManage()' :close-on-click-modal='false'>
             <el-form label-width="110px">
                 <el-form-item label="标题名称" class="required-label">
                     <el-input v-model="manageBaseInfoData.tomdName" placeholder="请输入标题名称"></el-input>
@@ -138,8 +138,9 @@
                 </el-form-item>
                 <el-form-item label="海报">
                     <el-upload
+                        ref='upload'
                         class="upload-demo file-upload"
-                        action="http://172.20.114.62:8082/tvmanage/public/uploadFile"
+                        :action="uploadUrl()"
                         :on-change="handleChange"
                         :on-success="handleAvatarSuccess"
                         :before-upload="beforeAvatarUpload"
@@ -150,6 +151,7 @@
                         :limit="1"
                         :auto-upload="true"
                         :on-exceed="handleExceed"
+                        accept="image/png, image/jpeg"
                         :file-list="fileList">
                         <el-button size="small" type="primary">点击上传</el-button>
                         <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
@@ -189,7 +191,7 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button @click="manageFileVisible = false">取 消</el-button>
+                <el-button @click="cancelManage()">取 消</el-button>
                 <el-button v-if="isAdd" type="primary" @click="addMaterial()">提 交</el-button>
                 <el-button v-if="!isAdd" type="primary" @click="updateMaterial()">提 交</el-button>
                 <el-button v-if="!isAdd" type="danger" @click="deleteMaterial()">删 除</el-button>
@@ -225,6 +227,7 @@
                     tomdRemark: '',
                     isenable: 1
                 },
+                baseSeverUrl: this.baseSeverUrl(),
                 searchName: '',
                 materialType: [],
                 materialSize: [],
@@ -236,7 +239,6 @@
                 localImageUrl: '',
                 fileList: [],
                 defaultSrc: './static/img/img.jpg',
-                fileList: [],
                 imgSrc: '',
                 cropImg: '',
                 dialogVisible: false,
@@ -342,7 +344,7 @@
                     if (dataList[i].tomdPosterUrl == '') {
                         dataList[i].tomdPosterUrl = './static/img/img.png'
                     } else {
-                        dataList[i].tomdPosterUrl = 'http://172.20.114.62:8082/tvmanage/' + dataList[i].tomdPosterUrl
+                        dataList[i].tomdPosterUrl = self.baseSeverUrl + dataList[i].tomdPosterUrl
                     }
                 }
                 self.tableData = dataList
@@ -351,12 +353,14 @@
             findMaterialById (view, data) {
                 let self = this
                 data ? data : ''
-                if ( view ) { // 新增
-                    for (let key in self.ruleForm) { // 新增清空数据列表
-                        if (key != 'isenable' && key != 'tourSex' && key != 'tourType') {
-                            delete self.ruleForm[key]
-                        }
-                    }
+                if ( view ) { // 新增tomdTypeName
+                    self.manageBaseInfoData.tomdType = '1'
+                    self.manageBaseInfoData.tomdTypeName = '图片'
+                    self.manageBaseInfoData.tomdSize = '1'
+                    self.manageBaseInfoData.tomdSizeName = '1x1'
+                    self.manageBaseInfoData.tomdClickType = '1'
+                    self.manageBaseInfoData.tomdClickTypeName = '启动应用'
+                    self.manageBaseInfoData.isenable = 1
                     self.isAdd = view
                 } else { // 修改
                     let params = {tomdId: data.tomdId}
@@ -365,7 +369,7 @@
                         param: params,
                         success: function (data) {
                             if (data.tomdPosterUrl != '') {
-                               self.localImageUrl = 'http://172.20.114.62:8082/tvmanage/' + data.tomdPosterUrl
+                               self.localImageUrl = self.baseSeverUrl + data.tomdPosterUrl
                             }
                             data.tomdTypeName = self.chooseCodeName('tomdType', data.tomdType)
                             data.tomdSizeName = self.chooseCodeName('tomdSize', data.tomdSize)
@@ -384,6 +388,10 @@
                     self.isAdd = view
                 }
                 this.manageFileVisible = true
+            },
+            // 关闭
+            closeManage () {
+                this.cancelManage()
             },
             // 新增素材
             addMaterial () {
@@ -449,7 +457,6 @@
                             center: true
                         })
                         self.getData()
-                        self.manageFileVisible = false
                     },
                     error: function (data) {
                         self.$message({
@@ -460,28 +467,44 @@
                     }
                 })
             },
+            // 取消
+            cancelManage () {
+                let self = this
+                this.manageFileVisible = false
+                for (let key in self.manageBaseInfoData) { // 清空数据列表
+                    if (key != 'tomdType' && key != 'tomdTypeName' && key != 'tomdSize' && key != 'tomdSizeName' && key != 'tomdClickType' && key != 'tomdClickTypeName' && key != 'isenable') {
+                        delete self.manageBaseInfoData[key]
+                    }
+                }
+                self.localImageUrl = ''
+                self.fileList = []
+            },
             // 上传
-            handleChange(file, fileList) {
+            uploadUrl () {
+                let url = '/api/public/uploadFile'
+                return url
+            },
+            handleChange(file, fileList) { // 文件状态改变时
+                console.log(fileList)
                 // this.imageUrl = file.url
             },
-            handleRemove(file, fileList) {
+            handleRemove(file, fileList) { // 文件列表移除文件时
                 this.localImageUrl = ''
             },
-            handlePreview(file) {
-                console.log(file);
+            handlePreview(file) { // 点击文件列表中已上传的文件时
             },
-            handleAvatarSuccess(res, file) {
+            handleAvatarSuccess(res, file) { // 上传成功时
                 this.localImageUrl = URL.createObjectURL(file.raw);
                 this.imageUrl = res.data
-                console.log(res, file)
+                // this.$refs.upload.clearFiles()
             },
-            beforeAvatarUpload(file) {
+            beforeAvatarUpload(file) { // 上传文件之前
 
             },
-            beforeRemove(file){
+            beforeRemove(file){ // 移除之前
                 console.log(file)
             },
-            handleExceed() {
+            handleExceed() { // 文件数量超出限制时
 
             },
             chooseTomdType (val) {
@@ -595,7 +618,7 @@
         width: 200px;
         min-height: 50px;
         padding: 5px;
-        border: 1px solid #666;
+        border: 1px solid #cdd1dd;
         img{
             width: 100%;
             display: block;

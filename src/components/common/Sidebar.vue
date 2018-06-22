@@ -70,7 +70,7 @@
                                 title: '基础管理'
                             },
                             {
-                                index: '404',
+                                index: 'app',
                                 title: '应用管理'
                             }
                         ]
@@ -89,6 +89,11 @@
                         icon: 'el-icon-error',
                         index: '404',
                         title: '404页面'
+                    },
+                    {
+                        icon: 'el-icon-error',
+                        index: 'test',
+                        title: 'test'
                     }
                 ]
             }

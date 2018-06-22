@@ -20,4 +20,9 @@ exports.install = function (Vue, options) {
         sessionStorage.removeItem(item)
     }
 
+    // 定义服务器地址
+    Vue.prototype.baseSeverUrl = function () {
+        return 'http://172.20.114.62:8082/tvmanage/'
+    }
+
 };

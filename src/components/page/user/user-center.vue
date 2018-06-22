@@ -75,7 +75,7 @@
         </div>
 
         <!-- 用户信息管理窗口 -->
-        <el-dialog :title=" isAdd ? '用户新增' : '用户修改'" :visible.sync="editVisible" width="30%" ref="dialog" @close="close(ruleForm)">
+        <el-dialog :title=" isAdd ? '用户新增' : '用户修改'" :visible.sync="editVisible" width="30%" ref="dialog" @close="close(ruleForm)" :close-on-click-modal='false'>
             <el-form :model="ruleForm" ref="ruleForm" label-width="90px" class="demo-ruleForm">
                 <el-form-item label="名称：" class="required-label">
                     <el-input v-model="ruleForm.tourName" placeholder="请填写名字" :disabled="isAdd ? false : true" maxlength="40"></el-input>
@@ -121,7 +121,7 @@
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
-                <el-button type="" @click="editVisible = false">取 消</el-button>
+                <el-button type="" @click="cancelManage()">取 消</el-button>
                 <el-button v-if="isAdd" type="primary" @click="addUser()">提 交</el-button>
                 <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
                 <el-button v-if="!isAdd" type="danger" @click="deleteUser()">删 除</el-button>
@@ -275,11 +275,6 @@
                     self.ruleForm.isenable = 1
                     self.ruleForm.tourSex = 1
                     self.ruleForm.tourType = '1'
-                    for (let key in self.ruleForm) { // 新增清空数据列表
-                        if (key != 'isenable' && key != 'tourSex' && key != 'tourType') {
-                            delete self.ruleForm[key]
-                        }
-                    }
                     self.isAdd = view
                 } else { // 修改
                     let params = {tourId: data.tourId}
@@ -303,8 +298,17 @@
             },
             // 关闭
             close (formName) {
-                console.log(formName)
-                // this.$refs[formName].resetFields()
+                this.cancelManage()
+            },
+            // 取消
+            cancelManage () {
+                let self = this
+                this.editVisible = false
+                for (let key in self.ruleForm) { // 清空数据列表
+                    if (key != 'tourType' && key != 'tourSex' && key != 'isenable') {
+                        delete self.ruleForm[key]
+                    }
+                }
             },
             // 修改
             updateInfo () {

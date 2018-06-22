@@ -153,34 +153,26 @@
                             </el-col>
                         </el-row>
                     </el-form>
-                    <div>
-                        <p v-for="item in todo">
-                            {{item.id}} , {{item.content}}
-                        </p>
-                    </div>
                     <div class="drag-box-item">
-                        <div class="item-title">m1</div>
-                        <draggable v-model="todo" @remove="removeHandle" :options="dragOptions">
+                        <div class="item-title">主题</div>
+                        <draggable v-model="todo" @remove="removeHandle" :options="dragOptions" @end='todoEnd'>
                             <transition-group tag="div" id="todo" class="item-ul">
-                                <div v-for="(item,index) in todo" class="drag-list image-box" :key="index">
-                                    <i class="el-icon-close" @click="clearProjectItem(index)">{{index}}</i>
+                                <div v-for="(item,index) in todo" class="drag-list image-box" :class="item.class" :key="index" :style="{backgroundImage: 'url(' + item.content + ')'}">
+                                    <i class="el-icon-circle-close" @click="clearProjectItem(index)"></i>
                                     <div class="temp-box">
                                         <i class="el-icon-circle-plus" @click="manageProject(index)"></i>
-                                        {{item.id}}
-                                        <p>{{item.dif}}</p>
+                                        {{item.size}}
                                     </div>
-                                    <img :src="item.content"/>
                                 </div>
                             </transition-group>
                         </draggable>
                     </div>
                     <div class="drag-box-item">
-                        <div class="item-title">m2</div>
+                        <div class="item-title">模块</div>
                         <draggable v-model="doing" @remove="removeHandle" @clone="clone" @start='start' @end='end' @choose='choose' :options="dragOptions">
                             <transition-group tag="div" id="doing" class="item-ul">
-                                <div v-for="(item,index) in doing" class="drag-list" :key="index">
-                                    {{item.id}}
-                                    <p>{{item.dif}}</p>
+                                <div v-for="(item,index) in doing" class="drag-list" :class="item.class" :key="index">
+                                    {{item.size}}
                                 </div>
                             </transition-group>
                         </draggable>
@@ -190,33 +182,47 @@
         </div>
 
         <!-- 素材管理框 -->
-        <el-dialog title="素材管理" :visible.sync="manageProjectVisible" width="80%">
+        <el-dialog title="素材管理" :visible.sync="manageProjectVisible" width="80%" :close-on-click-modal='false'>
+            <!-- 分页 -->
+            <div>
+                <div class="block">
+                    <el-pagination class="page-box"
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    :current-page="pageQuery.pageNum"
+                    :page-sizes="[10, 20, 30]"
+                    :page-size="pageQuery.size"
+                    layout="total, sizes, prev, pager, next, jumper"
+                    :total="pageQuery.total">
+                    </el-pagination>
+                </div>
+            </div>
             <el-table :data="projecData" border style="width: 100%" ref="multipleTable">
                 <el-table-column label="选择" width="80" header-align="center" align="center">
                     <template slot-scope="scope">
                         <el-radio :label="scope.$index" v-model="radioAdd" class="no-label" @change="radioChange(scope.row)">&nbsp;</el-radio>
                     </template>
                 </el-table-column>
-                <el-table-column prop="id" label="ID" width="80" header-align="center" align="center">
+                <el-table-column prop="tomdId" label="ID" width="80" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="status" label="状态" width="100" header-align="center" align="center">
+                <el-table-column prop="isenable" label="状态" width="100" header-align="center" align="center">
                 </el-table-column>
                 <el-table-column label="图标" width="150" header-align="center">
                     <template slot-scope="scope">
                         <div class="project-logo">
-                            <img :src="scope.row.src" />
+                            <img :src="scope.row.tomdPosterUrl" />
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="name" label="名称" width="150" header-align="center">
+                <el-table-column prop="tomdName" label="名称" width="150" header-align="center">
                 </el-table-column>
-                <el-table-column prop="version" label="版本" width="100" header-align="center" align="center">
+                <el-table-column prop="tomdVersion" label="版本" width="100" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="size" label="大小" width="100" header-align="center" align="center">
+                <el-table-column prop="tomdSize" label="大小" width="100" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="downloadNum" label="下载量" width="100" header-align="center" align="center">
+                <el-table-column prop="tomdClick" label="下载量" width="100" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="notes" label="备注" header-align="center" width="auto">
+                <el-table-column prop="tomdRemark" label="备注" header-align="center" width="auto">
                 </el-table-column>
             </el-table>
             <span slot="footer" class="dialog-footer">
@@ -234,8 +240,11 @@
     export default {
         data() {
             return {
-                url: './static/vuetable.json',
-                tableData: [],
+                pageQuery: { // 分页
+                    pageNum: 1,
+                    pageSize: 10,
+                    total: 0
+                },
                 projectBaseInfo: {
                     toseCode: '',
                     toseName: '',
@@ -249,41 +258,51 @@
                     toseRemark: '',
                     toseStatus: '',
                     isenable: 1,
+                    tomdId: '',
                     schemeDetail: [
                         {
-                            tosdModelId: 0,
-                            tosdModelOrder: 0,
-                            tosdRefId: 0,
-                            tosdRefUrl: "",
-                            tosdToseId: 0
+                            tosdModelId: 0, // 自定义模块ID
+                            tosdModelOrder: 0, // 模块序号
+                            tosdRefType: 0, // 子模块序号，只有一个就为1
+                            tosdRefId: 0, // 子模块素材ID
+                            tosdToseId: 0 // 方案ID
                         }
                     ]
                 },
-                projectBaseInfoNull: [], // 空数组用于清空
                 equipCore: [], // 机芯
                 equipType: [], // 机型
                 country: [], // 国家
                 language: [], // 语言
-                projecData: [],
+                projecData: {
+                    tomdType: '1',
+                    tomdTypeName: '图片',
+                    tomdName: '',
+                    tomdSize: '1',
+                    tomdSizeName: '1x1',
+                    tomdPosterUrl: '',
+                    tomdClickType: '1',
+                    tomdClickTypeName: '启动应用',
+                    tomdClick: '',
+                    tomdVersion: '',
+                    tomdRemark: '',
+                    isenable: 1
+                },
+                baseSeverUrl: this.baseSeverUrl(),
                 toseId: '',
+                radioAdd: '',
                 multipleSelection: [],
                 manageProjectVisible: false,
-                delVisible: false,
                 infoShow: true,
                 themeShow: true,
-                themeType: '',
-                form: {
-                    name: '',
-                    num: '',
-                    type1: '',
-                    type2: '',
-                    country: '',
-                    theme: '',
-                    notes: '',
-                    version: ''
+                doingItem: {
+                    id: '',
+                    content: '',
+                    class: ''
                 },
+                projectBaseInfoNull: [],
+                themeType: '',
                 radio: '1', 
-                state1: '',
+                localTomdPosterUrl: '',
                 radioRowInfo: {},
                 modeEditIndex: '',
                 imageSrc: '',
@@ -307,49 +326,37 @@
                     clone: true,
                     disabled: false
                 },
-                todo: [
-                    {
-                        id: 'a1',
-                        content: ''
-                    },
-                    {
-                        id: 'a1',
-                        content: ''
-                    }
-                ],
+                todo: [],
                 doing: [
                     {
-                        id: 'a2',
-                        dif: '',
-                        content: ''
+                        tosdModelId: 1, // 自定义模块ID
+                        tosdModelOrder: 0, // 模块序号
+                        tosdRefType: 1, // 子模块序号，只有一个就为1
+                        tosdRefId: 0, // 子模块素材ID
+                        tosdToseId: 0, // 方案ID
+                        size: '1x1',
+                        content: '',
+                        class: 'size1-1'
                     },
                     {
-                        id: 'a3',
-                        content: ''
+                        tosdModelId: 2, 
+                        tosdModelOrder: 0, 
+                        tosdRefType: 1, 
+                        tosdRefId: 0, 
+                        tosdToseId: 0, 
+                        size: '2x1',
+                        content: '',
+                        class: 'size2-1'
+                    }
+                ],
+                typeFileter: [
+                    {
+                        tosdModelId: 1,
+                        class: 'size1-1'
                     },
                     {
-                        id: 'b1',
-                        content: ''
-                    },
-                    {
-                        id: 'b2',
-                        content: ''
-                    },
-                    {
-                        id: 'b3',
-                        content: ''
-                    },
-                    {
-                        id: 'b4',
-                        content: ''
-                    },
-                    {
-                        id: 'b5',
-                        content: ''
-                    },
-                    {
-                        id: 'b6',
-                        content: ''
+                        tosdModelId: 2,
+                        class: 'size2-1'
                     }
                 ],
                 idx: -1
@@ -370,6 +377,7 @@
         },
         mounted() {
             this.GetSchemeCustSug()
+            this.getProjectData()
         },
         computed: {
             data() {
@@ -409,6 +417,7 @@
             // 修改
             updateProject () {
                 let self = this
+                this.projectBaseInfo.schemeDetail = this.todo
                 let parmams = this.projectBaseInfo
                 crud.skyworthComplexUpdate({
                     url: '/api/scheme/updateScheme',
@@ -441,6 +450,7 @@
                     param: '',
                     success: function (data) {
                         self.projectBaseInfo = data
+                        self.setModel(data)
                     },
                     error: function (data) {
                         self.$message({
@@ -450,6 +460,21 @@
                         })
                     }
                 })
+            },
+            // 格式化模块
+            setModel (data) {
+                let self = this
+                let schemeDetail = data.schemeDetail
+                let baseUrl = self.baseSeverUrl
+                for (let i = 0; i < schemeDetail.length; i ++) {
+                    let obj = {};
+                    obj = self.typeFileter.find((item)=>{
+                        return item.tosdModelId == schemeDetail[i].tosdModelId;
+                    })
+                    schemeDetail[i].class = obj.class
+                    schemeDetail[i].content = baseUrl + schemeDetail[i].tosdRefUrlList[0]
+                }
+                self.todo = schemeDetail
             },
             // 取消
             cancleAdd () {
@@ -513,53 +538,91 @@
             },
             // 分页导航
             handleCurrentChange(val) {
-                this.cur_page = val;
-                this.getData();
+                this.pageQuery.pageNum = val
+                this.getProjectData();
             },
-            // 获取 easy-mock 的模拟数据
-            getData() {
-                // 开发环境使用 easy-mock 数据，正式环境使用 json 文件
-                if (process.env.NODE_ENV === 'development') {
-                    this.url = '/ms/table/list';
-                };
-                this.url = '../../../../static/vuetable.json'; // 模拟数据
-                this.$axios.get(this.url, {
-                    page: this.cur_page
-                }).then((res) => {
-                    this.tableData = res.data.projectList;
-                    this.projecData = res.data.projecData
+            handleSizeChange() {
+
+            },
+            // 获取弹窗数据
+            getProjectData() {
+                let self = this
+                let dataUrl = '/api/material/queryMaterialList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
+                crud.skyworthGet({
+                    url: dataUrl,
+                    param: '',
+                    success: function (data) {
+                        self.setImg(data)
+                        self.pageQuery.total = data.total
+                    },
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
                 })
+            },
+            // 格式化图片
+            setImg (data) {
+                let self = this
+                let dataList = data.list
+                for (let i = 0; i < dataList.length; i ++) {
+                    if (dataList[i].tomdPosterUrl == '') {
+                        dataList[i].tomdPosterUrl = './static/img/img.png'
+                    } else {
+                        dataList[i].tomdPosterUrl = self.baseSeverUrl + dataList[i].tomdPosterUrl
+                    }
+                }
+                self.projecData = dataList
             },
             reset () {
 
             },
             // 从一个区域拖拽到另一个区域完成时的钩子
             removeHandle (event) {
-                this.$message.success(`从 ${event.from.id} 移动到 ${event.to.id} `);
+                let self = this
+                // this.$message.success(`从 ${event.from.id} 移动到 ${event.to.id} `);
                 if ( event.from.id == 'doing' ) {   // 从模板区域拖拽至操作区域
-                    this.doing = this.saveDoing     // 赋值原数组对象，保证模板区域不会变
-                    this.saveTodo = this.todo   // 将操作区域保存下来
-                    console.log(this.saveDoing, this.saveTodo)
+
                 }
                 if ( event.from.id == 'todo' ) {    // 从操作区域拖拽至模板区域
-                    this.todo = this.saveTodo   // 还原操作区域
-                    this.doing = this.saveDoing     // 还原模板区域
+                    self.todo = self.saveTodo   // 还原操作区域
+                    self.doing = self.saveDoing     // 还原模板区域
                 }
             },
             clone (event) {
-                // console.log(event);
-                // if (event.from.id == 'doing' && event.to.id == 'doing') { // 阻止模板区移动
-                //     this.dragOptions.disabled = true
-                //     console.log(this.dragOptions)
-                // }
             },
             start (event) { // 移动开始时的钩子
-                // this.saveTodo = this.todo   // 保存操作区域
-                // this.doing.splice(event.oldIndex, 0,this.doing[event.oldIndex])
-                this.doing[event.oldIndex].dif = new Date().getTime()
-                this.saveDoing = this.doing     // 保存模板区域
+                this.saveTodo = this.todo   // 还原操作区域
+                this.saveDoing = this.doing     // 还原模板区域
+                let doingItem = {
+                    tosdModelId: 0, 
+                    tosdModelOrder: 0, 
+                    tosdRefType: 0, 
+                    tosdRefId: 0, 
+                    tosdToseId: 0, 
+                    size: '',
+                    content: '',
+                    class: ''
+                }
+                doingItem.tosdModelId = this.doing[event.oldIndex].tosdModelId
+                doingItem.tosdRefType = this.doing[event.oldIndex].tosdRefType
+                doingItem.size = this.doing[event.oldIndex].size
+                doingItem.class = this.doing[event.oldIndex].class
+                this.setSessionStorage('doingItem', JSON.stringify(doingItem))
             },
             end (event) { // 移动结束后的钩子
+                this.doing.splice(event.oldIndex, 0, JSON.parse(this.getSessionStorage('doingItem')))
+                this.removeSessionStorage('doingItem')
+                this.todo[event.newIndex].tosdModelOrder = event.newIndex
+            },
+            todoEnd (event) {
+                let self = this
+                for (let i =0; i<self.todo.length; i++) {
+                    self.todo[i].tosdModelOrder = i
+                }
             },
             choose () { // 选择时
             },
@@ -603,20 +666,18 @@
             radioChange (data) {
                 let self = this
                 this.radioRowInfo = data // 选中的当前行的信息赋值给空数组
-                this.todo[self.modeEditIndex].content = data.src // 选中素材后赋值给content显示
-                console.log(this.todo[self.modeEditIndex])
+                this.localTomdPosterUrl = data.tomdPosterUrl // 选中素材后赋值给content显示
             },
             // 选择
             saveProjectEdit () {
+                this.todo[this.modeEditIndex].content = this.localTomdPosterUrl
+                this.todo[this.modeEditIndex].tosdRefId = this.radioRowInfo.tomdId
                 this.manageProjectVisible = false
-                // $('#modelImage_' + self.modeEditIndex).css('background-image', 'url(' + self.radioRowInfo.src + ')')
             },
             // 清除模板
             clearProjectItem (id) {
                 // $('#modelImage_' + id).remove()
                 this.todo.splice(id, 1)
-                // this.todo.splice($.inArray(self.todo[id], self.todo), 1)
-                console.log(id, this.todo)
             },
             handleSelect(item) {
                 this.projectBaseInfo.toseUnionCust = item.toseUnionCustName
@@ -714,7 +775,7 @@
     }
     .item-ul{
         padding: 0 8px 8px;
-        height: 200px;
+        height: 150px;
         overflow-x: scroll;
         overflow-y: scroll;
     }
@@ -732,7 +793,7 @@
         -webkit-transition: border .3s ease-in;
         transition: border .3s ease-in;
         width: 100px;
-        height: 150px;
+        height: 100px;
         float: left;
         display: inline-block;
         .temp-box{
@@ -789,12 +850,30 @@
         background-repeat: no-repeat;
     }
     .image-box .temp-box{
-        margin-top: 50%;
+        margin-top: 40px;
     }
-    .image-box .el-icon-close{
+    .image-box .el-icon-circle-close{
         float: right;
+    }
+    .image-box .el-icon-circle-plus{
     }
     .image-box img{
         width: 100%;
+    }
+    .size1-1{
+        width: 100px;
+        height: 100px;
+    }
+    .size1-2{
+        width: 100px;
+        height: 200px;
+    }
+    .size2-1{
+        width: 200px;
+        height: 100px;
+    }
+    .size2-2{
+        width: 200px;
+        height: 200px;
     }
 </style>

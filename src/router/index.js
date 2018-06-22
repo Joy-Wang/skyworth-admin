@@ -64,11 +64,18 @@ export default new Router({
                     meta: { title: '修改方案' }
                 },
                 {
-                    // 素材管理
+                    // 素材管理-基础管理
                     name: 'file',
                     path: '/file',
                     component: resolve => require(['../components/page/file/file.vue'], resolve),
-                    meta: { title: '素材管理' }
+                    meta: { title: '基础管理' }
+                },
+                {
+                    // 素材管理-app管理
+                    name: 'app',
+                    path: '/app',
+                    component: resolve => require(['../components/page/file/app.vue'], resolve),
+                    meta: { title: 'app管理' }
                 },
                 {
                     // 广告管理

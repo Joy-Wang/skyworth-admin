@@ -218,3 +218,35 @@ a {
     height: auto;
     border: none;
 }
+
+.file-upload-head{
+    width: 95px;
+    height: 95px;
+    margin: 0 auto;
+    text-align: center;
+}
+.file-upload-head .el-upload--text{
+    width: 95px;
+    height: 95px;
+    line-height: 95px;
+    background-color:rgba(0,0,0,0);
+    position: relative;
+}
+.file-upload-head .el-upload--text img,
+.file-upload-h1 .el-upload--text img{
+    width: 100%;
+    height: 100%;
+    display: block;
+    top: 0;
+    left: 0;
+    position: absolute;
+}
+.file-upload-h1{
+    width: 100%;
+    min-height: 100px;
+}
+.file-upload-h1 .el-upload--text{
+    width: 100%;
+    line-height: 180px;
+    background-color:rgba(0,0,0,0);
+}
