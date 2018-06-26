@@ -261,11 +261,12 @@
         methods:{
             // 分页导航
             handleCurrentChange(val) {
-                this.cur_page = val;
+                this.pageQuery.pageNum = val
                 this.getData();
             },
-            handleSizeChange() {
-
+            handleSizeChange(val) {
+                this.pageQuery.pageSize = val
+                this.getData();
             },
             // 获取数据
             getData() {
@@ -397,6 +398,7 @@
             addMaterial () {
                 let self = this
                 this.manageBaseInfoData.tomdPosterUrl = this.imageUrl
+                console.log(this.imageUrl, 'add')
                 let parmams = this.manageBaseInfoData
                 crud.skyworthComplexSave({
                     url: '/api/material/addMaterial',

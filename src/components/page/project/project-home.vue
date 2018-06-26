@@ -83,7 +83,7 @@
                 </el-table-column>
                 <el-table-column prop="toseName" label="名称" width="200" header-align="center">
                 </el-table-column>
-                <el-table-column prop="toseUnionCustName" label="客户" width="auto" header-align="center">
+                <el-table-column prop="toseUnionCustName" label="客户" header-align="center">
                 </el-table-column>
                 <el-table-column prop="toseVersion" label="版本" width="100" header-align="center">
                 </el-table-column>
@@ -139,6 +139,9 @@
         mounted () {
             this.GetSchemeNameSug()
             this.GetSchemeCustSug()
+        },
+        beforeDestroy () {
+            eventBus.$off('projectGetList')
         },
         computed: {
             data() {

@@ -155,7 +155,7 @@
                     </el-form>
                     <div class="drag-box-item">
                         <div class="item-title">主题</div>
-                        <draggable v-model="todo" @remove="removeHandle" :options="dragOptions" @end='todoEnd'>
+                        <draggable v-model="todo" @remove="removeHandle" :options="dragOptions" @end='todoEnd' class="item-ul-box">
                             <transition-group tag="div" id="todo" class="item-ul">
                                 <div v-for="(item,index) in todo" class="drag-list image-box" :class="item.class" :key="index" :style="{backgroundImage: 'url(' + item.content + ')'}">
                                     <i class="el-icon-circle-close" @click="clearProjectItem(index)"></i>
@@ -205,7 +205,10 @@
                 </el-table-column>
                 <el-table-column prop="tomdId" label="ID" width="80" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="isenable" label="状态" width="100" header-align="center" align="center">
+                <el-table-column label="状态" width="100" header-align="center" align="center">
+                    <template slot-scope="scope">
+                        <span :class="scope.row.isenable == '1' ? 'sky-green' : 'sky-red'">{{ scope.row.isenable ? '有效' : '无效' }}</span>
+                    </template>
                 </el-table-column>
                 <el-table-column label="图标" width="150" header-align="center">
                     <template slot-scope="scope">
@@ -218,7 +221,7 @@
                 </el-table-column>
                 <el-table-column prop="tomdVersion" label="版本" width="100" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="tomdSize" label="大小" width="100" header-align="center" align="center">
+                <el-table-column prop="tomdSizeName" label="大小" width="100" header-align="center" align="center">
                 </el-table-column>
                 <el-table-column prop="tomdClick" label="下载量" width="100" header-align="center" align="center">
                 </el-table-column>
@@ -367,25 +370,25 @@
             this.getProjectData()
         },
         computed: {
-            data() {
-                return this.tableData.filter((d) => {
-                    let is_del = false;
-                    for (let i = 0; i < this.del_list.length; i++) {
-                        if (d.name === this.del_list[i].name) {
-                            is_del = true;
-                            break;
-                        }
-                    }
-                    if (!is_del) {
-                        if (d.address.indexOf(this.select_cate) > -1 &&
-                            (d.name.indexOf(this.select_word) > -1 ||
-                                d.address.indexOf(this.select_word) > -1)
-                        ) {
-                            return d;
-                        }
-                    }
-                })
-            }
+            // data() {
+            //     return this.tableData.filter((d) => {
+            //         let is_del = false;
+            //         for (let i = 0; i < this.del_list.length; i++) {
+            //             if (d.name === this.del_list[i].name) {
+            //                 is_del = true;
+            //                 break;
+            //             }
+            //         }
+            //         if (!is_del) {
+            //             if (d.address.indexOf(this.select_cate) > -1 &&
+            //                 (d.name.indexOf(this.select_word) > -1 ||
+            //                     d.address.indexOf(this.select_word) > -1)
+            //             ) {
+            //                 return d;
+            //             }
+            //         }
+            //     })
+            // }
         },
         watch: {
             '$route' (to, from) {
@@ -549,9 +552,11 @@
                 this.setSessionStorage('doingItem', JSON.stringify(doingItem))
             },
             end (event) { // 移动结束后的钩子
-                this.doing.splice(event.oldIndex, 0, JSON.parse(this.getSessionStorage('doingItem')))
+                if (event.to.id != 'doing') {
+                    this.doing.splice(event.oldIndex, 0, JSON.parse(this.getSessionStorage('doingItem')))
+                    this.todo[event.newIndex].tosdModelOrder = event.newIndex
+                }
                 this.removeSessionStorage('doingItem')
-                this.todo[event.newIndex].tosdModelOrder = event.newIndex
             },
             todoEnd (event) {
                 let self = this
@@ -676,6 +681,10 @@
 </script>
 
 <style scoped lang='scss'>
+    .page-box{
+        text-align: right;
+        margin-bottom: 10px;
+    }
     .handle-box {
         margin-bottom: 20px;
     }
@@ -711,6 +720,13 @@
         line-height: 1.5;
         color: #24292e;
         font-weight: 600;
+    }
+    .item-ul-box{
+        width: 100%;
+        overflow-x: scroll;
+    }
+    .item-ul-box .item-ul{
+        width: 2000px;
     }
     .item-ul{
         padding: 0 8px 8px;

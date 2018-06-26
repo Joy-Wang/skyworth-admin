@@ -3,6 +3,7 @@
     <div class="project-home"> 
         <div class="container">
             <div class="handle-box">
+                <el-button type="" @click="cancleAdd()">取 消</el-button>
                 <el-button type="danger" @click="deleteProject()">删 除</el-button>
                 <el-button type="success" @click="saveProject()">保 存</el-button>
                 <el-button type="primary" @click="updateProject()">修 改</el-button>
@@ -155,7 +156,7 @@
                     </el-form>
                     <div class="drag-box-item">
                         <div class="item-title">主题</div>
-                        <draggable v-model="todo" @remove="removeHandle" :options="dragOptions" @end='todoEnd'>
+                        <draggable v-model="todo" @remove="removeHandle" :options="dragOptions" @end='todoEnd' class="item-ul-box">
                             <transition-group tag="div" id="todo" class="item-ul">
                                 <div v-for="(item,index) in todo" class="drag-list image-box" :class="item.class" :key="index" :style="{backgroundImage: 'url(' + item.content + ')'}">
                                     <i class="el-icon-circle-close" @click="clearProjectItem(index)"></i>
@@ -205,7 +206,10 @@
                 </el-table-column>
                 <el-table-column prop="tomdId" label="ID" width="80" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="isenable" label="状态" width="100" header-align="center" align="center">
+                <el-table-column label="状态" width="100" header-align="center" align="center">
+                    <template slot-scope="scope">
+                        <span :class="scope.row.isenable == '1' ? 'sky-green' : 'sky-red'">{{ scope.row.isenable ? '有效' : '无效' }}</span>
+                    </template>
                 </el-table-column>
                 <el-table-column label="图标" width="150" header-align="center">
                     <template slot-scope="scope">
@@ -218,7 +222,7 @@
                 </el-table-column>
                 <el-table-column prop="tomdVersion" label="版本" width="100" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="tomdSize" label="大小" width="100" header-align="center" align="center">
+                <el-table-column prop="tomdSizeName" label="大小" width="100" header-align="center" align="center">
                 </el-table-column>
                 <el-table-column prop="tomdClick" label="下载量" width="100" header-align="center" align="center">
                 </el-table-column>
@@ -374,6 +378,7 @@
             this.getSelectData('equip_core')
             this.findSchemeById(this.toseId)
             this.projectBaseInfoNull = this.projectBaseInfo
+            this.todo = []
         },
         mounted() {
             this.GetSchemeCustSug()
@@ -406,6 +411,7 @@
                 this.projectBaseInfo = this.projectBaseInfoNull
                 if (to.name === 'projectEdit') {
                     let id = self.getLocalStorage('toseId')
+                    self.todo = []
                     self.findSchemeById(id)
                 }
             }
@@ -466,19 +472,21 @@
                 let self = this
                 let schemeDetail = data.schemeDetail
                 let baseUrl = self.baseSeverUrl
-                for (let i = 0; i < schemeDetail.length; i ++) {
-                    let obj = {};
-                    obj = self.typeFileter.find((item)=>{
-                        return item.tosdModelId == schemeDetail[i].tosdModelId;
-                    })
-                    schemeDetail[i].class = obj.class
-                    schemeDetail[i].content = baseUrl + schemeDetail[i].tosdRefUrlList[0]
+                if (schemeDetail[0].tosdModelId != 0) {
+                    for (let i = 0; i < schemeDetail.length; i ++) {
+                        let obj = {};
+                        obj = self.typeFileter.find((item)=>{
+                            return item.tosdModelId == schemeDetail[i].tosdModelId;
+                        })
+                        schemeDetail[i].class = obj.class
+                        schemeDetail[i].content = baseUrl + schemeDetail[i].tosdRefUrlList[0]
+                    }
+                    self.todo = schemeDetail
                 }
-                self.todo = schemeDetail
             },
             // 取消
             cancleAdd () {
-                this.$router.push({name: 'project'})
+                // this.$router.push({name: 'project'})
                 eventBus.$emit('todo', '')
             },
             // 删除
@@ -737,6 +745,10 @@
 </script>
 
 <style scoped lang='scss'>
+    .page-box{
+        text-align: right;
+        margin-bottom: 10px;
+    }
     .handle-box {
         margin-bottom: 20px;
     }
@@ -772,6 +784,13 @@
         line-height: 1.5;
         color: #24292e;
         font-weight: 600;
+    }
+    .item-ul-box{
+        width: 100%;
+        overflow-x: scroll;
+    }
+    .item-ul-box .item-ul{
+        width: 2000px;
     }
     .item-ul{
         padding: 0 8px 8px;
