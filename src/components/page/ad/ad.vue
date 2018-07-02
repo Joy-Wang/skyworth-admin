@@ -1,10 +1,5 @@
 <template>
     <div class="">
-        <div class="crumbs">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-message"></i> tab选项卡</el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
         <div class="container">
             <el-tabs v-model="message">
                 <el-tab-pane :label="`未读消息(${unread.length})`" name="first">
@@ -77,18 +72,18 @@
                 message: 'first',
                 showHeader: false,
                 unread: [{
-                    date: '2018-04-19 20:00:00',
+                    date: '2018-06-29 20:00:00',
                     title: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护',
                 },{
-                    date: '2018-04-19 21:00:00',
+                    date: '2018-06-29 21:00:00',
                     title: '今晚12点整发大红包，先到先得',
                 }],
                 read: [{
-                    date: '2018-04-19 20:00:00',
+                    date: '2018-06-29 20:00:00',
                     title: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护'
                 }],
                 recycle: [{
-                    date: '2018-04-19 20:00:00',
+                    date: '2018-06-29 20:00:00',
                     title: '【系统通知】该系统将于今晚凌晨2点到5点进行升级维护'
                 }]
             }

@@ -20,7 +20,7 @@
                             </el-col>
                             <el-col :span="6">
                                 <el-form-item label="名称" label-width="40px">
-                                    <el-input v-model="searName" placeholder="请输入名称"></el-input>                                    
+                                    <el-input v-model="searchName" placeholder="请输入名称"></el-input>                                    
                                 </el-form-item>
                             </el-col>
                             <el-col :span="5">
@@ -49,7 +49,7 @@
             <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="codeTypeName" label="类型" width="100" header-align="center">
+                <el-table-column prop="codeTypeName" label="类型" width="100" header-align="center" align="center">
                 </el-table-column>
                 <el-table-column label="名称" width="200" header-align="center">
                     <template slot-scope="scope">
@@ -72,33 +72,43 @@
         </div>
 
         <!-- 基础信息管理框 -->
-        <el-dialog title="基础信息管理" :visible.sync="manageInfoVisible" width="35%" @close='cancelManage()' :close-on-click-modal='false'>
+        <el-dialog title="基础信息管理" :visible.sync="manageInfoVisible" width="35%" @close='cancelManage()' class="base-info-dialog" :close-on-click-modal='false'>
             <el-form :model="manageBaseInfoData" label-width="80px">
                 <el-form-item label="编码：" class="required-label">
-                    <el-input v-if="isAdd" v-model="manageBaseInfoData.codeCode" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="20"></el-input>
-                    <el-input v-if="!isAdd" v-model="manageBaseInfoData.codeCode" disabled placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="20"></el-input>
+                    <el-input v-if="isAdd" v-model="manageBaseInfoData.codeCode" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001" maxlength="20"></el-input>
+                    <el-input v-if="!isAdd" v-model="manageBaseInfoData.codeCode" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001" maxlength="20"></el-input>
                 </el-form-item>
                 <el-form-item label="名称：" class="required-label">
-                    <el-input v-model="manageBaseInfoData.codeName" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001" maxlength="20"></el-input>
+                    <el-input v-model="manageBaseInfoData.codeName" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="20"></el-input>
                 </el-form-item>
                 <el-form-item label="类型：" class="required-label">
-                    <el-select v-model="manageBaseInfoData.codeTypeName" v-if="isAdd" placeholder="请选择类型">
-                        <el-option
-                        v-for="item in infoType"
-                        :key="item.codeCode"
-                        :label="item.codeName"
-                        :value="item.codeCode">
-                        </el-option>
-                    </el-select>
-                    <el-select v-model="manageBaseInfoData.codeType" v-if="!isAdd" disabled placeholder="请选择类型">
-                    </el-select>
+                    <el-row>
+                        <el-col :span="10">
+                            <el-select v-model="manageBaseInfoData.codeType" v-if="isAdd" placeholder="请选择类型">
+                                <el-option
+                                v-for="item in infoType"
+                                :key="item.codeCode"
+                                :label="item.codeName"
+                                :value="item.codeCode">
+                                </el-option>
+                            </el-select>
+                            <el-select v-model="manageBaseInfoData.codeType" v-if="!isAdd" disabled placeholder="请选择类型">
+                                <el-option
+                                v-for="item in infoType"
+                                :key="item.codeCode"
+                                :label="item.codeName"
+                                :value="item.codeCode">
+                                </el-option>
+                            </el-select>
+                        </el-col>
+                    </el-row>
                 </el-form-item>
                 <el-form-item label="状态：" class="required-label">
                     <el-radio v-model="manageBaseInfoData.isenable" :label="1">生效</el-radio>
                     <el-radio v-model="manageBaseInfoData.isenable" :label="0">失效</el-radio>
                 </el-form-item>
                 <el-form-item label="排序：">
-                    <el-input v-model="manageBaseInfoData.codeSeq" maxlength="20"></el-input>
+                    <el-input type="number" v-model="manageBaseInfoData.codeSeq" maxlength="20"></el-input>
                 </el-form-item>
                 <el-form-item label="描述：">
                     <el-input
@@ -137,14 +147,14 @@
                 delVisible: false,
                 isAdd: true,
                 country: '',
-                searName: '',
+                searchName: '',
                 infoType: [],
                 searchInfoType: '',
                 baseInfoStatus: [],
                 manageBaseInfoData: {
                     codeCode: '',
                     codeName: '',
-                    codeType: '',
+                    codeType: 'base_type',
                     isenable: 1,
                     codeSeq: '',
                     codeDesc: '',
@@ -219,8 +229,8 @@
             // 信息查询
             search () {
                 let self = this
-                let dataUrl = '/api/baseinfo/queryParameterList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize + '&codeType=' + this.searchInfoType                
-                if (this.searchInfoType != '') {
+                let dataUrl = '/api/baseinfo/queryParameterList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize + '&codeType=' + this.searchInfoType + '&codeName=' + this.searchName                
+                if (this.searchInfoType != '' || this.searchName != '') {
                     crud.skyworthGet({
                         url: dataUrl,
                         param: '',
@@ -246,7 +256,7 @@
                 data ? data : ''
                 if ( view ) { // 新增
                     self.manageBaseInfoData.isenable = 1
-                    self.manageBaseInfoData.codeTypeName = 'base_type'
+                    self.manageBaseInfoData.codeType = 'base_type'
                     self.isAdd = view
                 } else { // 修改
                     let params = {codeId: data.codeId}
@@ -321,33 +331,37 @@
             // 删除信息
             deleteBaseInfo () {
                 let self = this
-                crud.skyworthDelete({
-                    url: '/api/baseinfo/deleteParameterCode' + '?codeId=' + self.manageBaseInfoData.codeId,
-                    param: '',
-                    success: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'success',
-                            center: true
-                        })
-                        self.getData()
-                        self.manageInfoVisible = false
-                    },
-                    error: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'error',
-                            center: true
-                        })
-                    }
+                this.$confirm('您确定删除吗？')
+                .then(_ => {
+                    crud.skyworthDelete({
+                        url: '/api/baseinfo/deleteParameterCode' + '?codeId=' + self.manageBaseInfoData.codeId,
+                        param: '',
+                        success: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'success',
+                                center: true
+                            })
+                            self.getData()
+                            self.manageInfoVisible = false
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
                 })
+                .catch(_ => {})
             },
             // 取消
             cancelManage () {
                 let self = this
                 this.manageInfoVisible = false
                 for (let key in self.manageBaseInfoData) { // 清空数据列表
-                    if (key != 'isenable' && key != 'codeTypeName') {
+                    if (key != 'isenable' && key != 'codeType') {
                         delete self.manageBaseInfoData[key]
                     }
                 }
@@ -384,10 +398,8 @@
                 };
             },
             handleSelect(item) {
-                console.log(item);
             },
             handleIconClick(ev) {
-                console.log(ev);
             },
             // 备注
             formatter(row, column) {

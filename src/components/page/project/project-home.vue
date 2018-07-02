@@ -291,7 +291,6 @@
                 this.searchCust = item.toseUnionCustName
             },
             handleIconClick(ev) {
-                console.log(ev);
             },
             // 新增方案
             addProject () {

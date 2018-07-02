@@ -178,7 +178,31 @@ a {
 }
 .el-dialog .el-dialog__body{
     max-height: 40vh;
-    overflow-y: scroll;
+    overflow-y: auto;
+}
+.device-dialog .el-dialog .el-dialog__body{
+    max-height: 60vh;
+    padding: 0 20px;
+}
+.user-dialog .el-dialog .el-dialog__body{
+    max-height: 60vh;
+    padding: 0 20px;
+}
+.base-info-dialog .el-dialog .el-dialog__body{
+    max-height: 50vh;
+    padding: 10px 20px;
+}
+.project-dialog .el-dialog .el-dialog__body{
+    max-height: 60vh;
+    padding: 0px 20px;
+}
+.file-dialog .el-dialog .el-dialog__body{
+    max-height: 60vh;
+    padding: 0px 20px;
+}
+.app-dialog .el-dialog .el-dialog__body{
+    max-height: 60vh;
+    padding: 0px 20px;
 }
 
 .click-name{
@@ -249,4 +273,10 @@ a {
     width: 100%;
     line-height: 180px;
     background-color:rgba(0,0,0,0);
+}
+
+.el-table .cell{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

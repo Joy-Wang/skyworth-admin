@@ -54,6 +54,8 @@
                             success: function (data) {
                                 if (data.code == '0008') { // 账号密码匹配成功
                                     localStorage.setItem('sky_username', self.ruleForm.username) // 保存用户名
+                                    document.cookie = 'sessionId=' + data.data
+                                    // document.session.setAttribute("user", obj)
                                     self.$router.push('/')
                                 } else {
                                     self.$message({

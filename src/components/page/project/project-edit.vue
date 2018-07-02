@@ -183,7 +183,7 @@
         </div>
 
         <!-- 素材管理框 -->
-        <el-dialog title="素材管理" :visible.sync="manageProjectVisible" width="80%" :close-on-click-modal='false'>
+        <el-dialog title="素材管理" :visible.sync="manageProjectVisible" width="80%" top='10vh' class="project-dialog" :close-on-click-modal='false'>
             <!-- 分页 -->
             <div>
                 <div class="block">
@@ -492,27 +492,31 @@
             // 删除
             deleteProject () {
                 let self = this
-                crud.skyworthDelete({
-                    url: '/api/scheme/deleteScheme?toseId=' + this.toseId,
-                    param: '',
-                    success: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'success',
-                            center: true
-                        })
-                        self.$router.push({name: 'project'})
-                        eventBus.$emit('todo', '')
-                        eventBus.$emit('projectGetList', '')
-                    },
-                    error: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'error',
-                            center: true
-                        })
-                    }
+                this.$confirm('您确定删除吗？')
+                .then(_ => {
+                    crud.skyworthDelete({
+                        url: '/api/scheme/deleteScheme?toseId=' + this.toseId,
+                        param: '',
+                        success: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'success',
+                                center: true
+                            })
+                            self.$router.push({name: 'project'})
+                            eventBus.$emit('todo', '')
+                            eventBus.$emit('projectGetList', '')
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
                 })
+                .catch(_ => {})
             },
             // 获取下拉列表数据
             getSelectData (type) {
@@ -542,7 +546,6 @@
             },
             // 选择国家
             selectCountry (val) {
-                console.log(val)
             },
             // 分页导航
             handleCurrentChange(val) {
@@ -691,7 +694,6 @@
                 this.projectBaseInfo.toseUnionCust = item.toseUnionCustName
             },
             handleIconClick(ev) {
-                console.log(ev);
             },
             // 备注
             formatter(row, column) {

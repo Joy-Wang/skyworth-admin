@@ -84,16 +84,6 @@
                         icon: 'el-icon-bell',
                         index: 'flowMonitoring',
                         title: '流量监控与推荐'
-                    },
-                    {
-                        icon: 'el-icon-error',
-                        index: '404',
-                        title: '404页面'
-                    },
-                    {
-                        icon: 'el-icon-error',
-                        index: 'test',
-                        title: 'test'
                     }
                 ]
             }

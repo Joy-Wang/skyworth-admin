@@ -80,7 +80,7 @@
         </div>
         
         <!-- 素材管理框 -->
-        <el-dialog :title=" isAdd ? '新增应用' : '修改应用'" :visible.sync="manageAppVisible" width="50%" @close='closeManage()' :close-on-click-modal='false'>
+        <el-dialog :title=" isAdd ? '新增应用' : '修改应用'" :visible.sync="manageAppVisible" width="50%" top='10vh' @close='closeManage()' class="app-dialog" :close-on-click-modal='false'>
             <el-form label-width="90px">
                 <el-row style="margin-bottom: 18px;">
                     <el-col :span="8">
@@ -403,16 +403,11 @@
                 localImageUrlH3: '',
                 fileList: [],
                 fileListApp: [],
-                fileListIcon: [],
-                defaultSrc: './static/img/img.jpg',
-                imgSrc: '',
-                cropImg: '',
-                dialogVisible: false
+                fileListIcon: []
             }
         },
         created() {
-            this.getData();
-            this.cropImg = this.defaultSrc;
+            this.getData()
         },
         mounted () {
             this.getSelectData('app_type')
@@ -428,10 +423,11 @@
             // 分页导航
             handleCurrentChange(val) {
                 this.pageQuery.pageNum = val
-                this.getData();
+                this.getData()
             },
-            handleSizeChange() {
-
+            handleSizeChange(val) {
+                this.pageQuery.pageSize = val
+                this.getData()
             },
             // 获取数据
             getData() {
@@ -522,10 +518,10 @@
             editSetImg (data) {
                 let self = this
                 let baseUrl = this.baseSeverUrl
-                if (data.toanIcon != '') self.localImageUrl = baseUrl + data.toanIcon
-                if (data.toanPosterFirst != '') self.localImageUrlH1 = baseUrl + data.toanPosterFirst
-                if (data.toanPosterSecond != '') self.localImageUrlH2 = baseUrl + data.toanPosterSecond
-                if (data.toanPosterThird != '') self.localImageUrlH3 = baseUrl + data.toanPosterThird
+                if (data.toanIcon != '' && data.toanIcon != null) self.localImageUrl = baseUrl + data.toanIcon
+                if (data.toanPosterFirst != '' && data.toanPosterFirst != null) self.localImageUrlH1 = baseUrl + data.toanPosterFirst
+                if (data.toanPosterSecond != '' && data.toanPosterSecond != null) self.localImageUrlH2 = baseUrl + data.toanPosterSecond
+                if (data.toanPosterThird != '' && data.toanPosterThird != null) self.localImageUrlH3 = baseUrl + data.toanPosterThird
                 self.manageAppInfo = data
             },
             // 打开管理窗口
@@ -540,7 +536,6 @@
                     self.manageAppInfo.toanLanguage = 'English'
                     self.manageAppInfo.isenable = 1
                     self.isAdd = view
-                    console.log(this.manageAppInfo)
                 } else { // 修改
                     let params = {toanId: data.toanId}
                     crud.skyworthGet({ // 通过id获取当前用户信息
@@ -600,7 +595,6 @@
             updateApplication () {
                 let self = this
                 let params = this.manageAppInfo
-                console.log('1')
                 crud.skyworthComplexUpdate({
                     url: '/api/app/updateApplication',
                     param: params,
@@ -625,26 +619,30 @@
             // 删除
             deleteApplication () {
                 let self = this
-                crud.skyworthDelete({
-                    url: '/api/app/deleteApplication?toanId=' + self.manageAppInfo.toanId,
-                    param: '',
-                    success: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'success',
-                            center: true
-                        })
-                        self.getData()
-                        self.manageAppVisible = false
-                    },
-                    error: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'error',
-                            center: true
-                        })
-                    }
+                this.$confirm('您确定删除吗？')
+                .then(_ => {
+                    crud.skyworthDelete({
+                        url: '/api/app/deleteApplication?toanId=' + self.manageAppInfo.toanId,
+                        param: '',
+                        success: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'success',
+                                center: true
+                            })
+                            self.getData()
+                            self.manageAppVisible = false
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
                 })
+                .catch(_ => {});
             },
             // 取消
             cancelManage () {
@@ -668,20 +666,17 @@
                 return url
             },
             handleChangeApp(file, fileList) {
-                console.log(fileList)
                 // this.imageUrl = file.url
             },
             handleRemoveApp(file, fileList) {
                 // this.localImageUrl = ''
             },
             handlePreviewApp(file) {
-                console.log(file);
             },
             handleAvatarSuccessApp(res, file) {
                 this.manageAppInfo.toanUrl = res.data
                 this.manageAppInfo.toanSize = parseInt(file.size / 1024 / 1024)
                 this.isApk = true
-                // console.log(res, file)
             },
             beforeAvatarUploadApp(file) {
                 let self = this
@@ -697,10 +692,8 @@
                     self.isApk = false
                 }
                 return appType1 || appType2 && appSize
-
             },
             beforeRemoveApp(file){
-                console.log(file)
             },
             handleExceedApp() {
 
@@ -712,7 +705,6 @@
                 this.localImageUrl = ''
             },
             handlePreview(file) {
-                console.log(file);
             },
             handleAvatarSuccess(res, file) {
                 this.localImageUrl = URL.createObjectURL(file.raw);
@@ -723,7 +715,6 @@
             beforeAvatarUpload(file) {
             },
             beforeRemove(file){
-                console.log(file)
             },
             handleExceed() {
 
@@ -786,28 +777,7 @@
                 return obj.codeName
             },
             // 备注
-            setImage(e){
-                const file = e.target.files[0];
-                if (!file.type.includes('image/')) {
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    this.dialogVisible = true;
-                    this.imgSrc = event.target.result;
-                    this.$refs.cropper && this.$refs.cropper.replace(event.target.result);
-                };
-                reader.readAsDataURL(file);
-            },
-            cropImage () {
-                this.cropImg = this.$refs.cropper.getCroppedCanvas().toDataURL();
-            },
-            cancelCrop(){
-                this.dialogVisible = false;
-                this.cropImg = this.defaultSrc;
-            },
             imageuploaded(res) {
-                console.log(res)
             },
             handleError(){
                 this.$notify.error({

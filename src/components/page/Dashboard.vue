@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <el-row :gutter="20">
+    <div class="skyworth-bg">
+        <!-- <el-row :gutter="20">
             <el-col :span="8">
                 <el-row>
                     <el-col>
@@ -93,7 +93,7 @@
                 </el-card>
 
             </el-col>
-        </el-row>
+        </el-row> -->
     </div>
 </template>
 
@@ -140,6 +140,12 @@
 
 
 <style scoped>
+    .skyworth-bg{
+        width: 100%;
+        height: 83vh;
+        background: url('../../../static/img/skyworthBg.png') no-repeat;
+        background-size: 100% 100%;
+    }
     .el-row {
         margin-bottom: 20px;
     }

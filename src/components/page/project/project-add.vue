@@ -182,7 +182,7 @@
         </div>
 
         <!-- 素材管理框 -->
-        <el-dialog title="素材管理" :visible.sync="manageProjectVisible" width="80%" :close-on-click-modal='false'>
+        <el-dialog title="素材管理" :visible.sync="manageProjectVisible" width="80%" top='10vh' class="project-dialog" :close-on-click-modal='false'>
             <!-- 分页 -->
             <div>
                 <div class="block">
@@ -249,7 +249,7 @@
                     total: 0
                 },
                 projectBaseInfo: {
-                    toseCode: '',
+                    toseCode: '1',
                     toseName: '',
                     toseEquipmentCore: 'U5',
                     toseEquipmentType: '8R92T',
@@ -474,13 +474,12 @@
                 let self = this
                 for (let key in self.projectBaseInfo) { // 新增清空数据列表
                     if (key != 'isenable' && key != 'toseEquipmentCore' && key != 'toseEquipmentType' && key != 'toseEquipmentCountry' && key != 'toseLevel' && key != 'schemeDetail') {
-                        delete self.manageBaseInfoData[key]
+                        delete self.projectBaseInfo[key]
                     }
                 }
             },
             // 选择国家
             selectCountry (val) {
-                console.log(val)
             },
             // 获取弹窗数据
             getProjectData() {
@@ -563,7 +562,6 @@
                 for (let i =0; i<self.todo.length; i++) {
                     self.todo[i].tosdModelOrder = i
                 }
-                console.log(this.todo)
             },
             choose () { // 选择时
             },
@@ -608,7 +606,6 @@
                 let self = this
                 this.radioRowInfo = data // 选中的当前行的信息赋值给空数组
                 this.localTomdPosterUrl = data.tomdPosterUrl // 选中素材后赋值给content显示
-                console.log(this.radioRowInfo)
             },
             // 选择
             saveProjectEdit () {
@@ -621,13 +618,11 @@
                 // $('#modelImage_' + id).remove()
                 this.todo.splice(id, 1)
                 // this.todo.splice($.inArray(self.todo[id], self.todo), 1)
-                console.log(id, this.todo)
             },
             handleSelect(item) {
                 this.projectBaseInfo.toseUnionCust = item.toseUnionCustName
             },
             handleIconClick(ev) {
-                console.log(ev);
             },
             // 备注
             formatter(row, column) {

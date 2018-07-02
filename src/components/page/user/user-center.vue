@@ -75,50 +75,86 @@
         </div>
 
         <!-- 用户信息管理窗口 -->
-        <el-dialog :title=" isAdd ? '用户新增' : '用户修改'" :visible.sync="editVisible" width="30%" ref="dialog" @close="close(ruleForm)" :close-on-click-modal='false'>
+        <el-dialog :title=" isAdd ? '用户新增' : '用户修改'" :visible.sync="editVisible" width="40%" top="10vh" ref="dialog" @close="close(ruleForm)" class="user-dialog" :close-on-click-modal='false'>
             <el-form :model="ruleForm" ref="ruleForm" label-width="90px" class="demo-ruleForm">
-                <el-form-item label="名称：" class="required-label">
-                    <el-input v-model="ruleForm.tourName" placeholder="请填写名字" :disabled="isAdd ? false : true" maxlength="40"></el-input>
-                </el-form-item>
-                <el-form-item label="账号：" class="required-label">
-                    <el-input v-model="ruleForm.tourAccount" placeholder="请填写账号" :disabled="isAdd ? false : true" maxlength="20"></el-input>
-                </el-form-item>
-                <el-form-item label="密码：" v-if="isAdd" class="required-label">
-                    <el-input v-model="ruleForm.tourPassword" placeholder="请填写密码" maxlength="40"></el-input>
-                </el-form-item>
-                <el-form-item label="类型：" v-if="isAdd" class="required-label">
-                    <el-select v-model="ruleForm.tourType" placeholder="请选择类型">
-                        <el-option
-                        v-for="item in userType"
-                        :key="item.codeCode"
-                        :label="item.codeName"
-                        :value="item.codeCode">
-                        </el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="英文名：">
-                    <el-input v-model="ruleForm.tourEnglishName" placeholder="请填写英文名" maxlength="30"></el-input>
-                </el-form-item>
-                <el-form-item label="状态：" class="required-label">
-                    <el-radio v-model="ruleForm.isenable" :label="1">生效</el-radio>
-                    <el-radio v-model="ruleForm.isenable" :label="0">失效</el-radio>
-                </el-form-item>
-                <el-form-item label="性别：" class="required-label">
-                    <el-radio v-model="ruleForm.tourSex" :label="1">男</el-radio>
-                    <el-radio v-model="ruleForm.tourSex" :label="2">女</el-radio>
-                </el-form-item>
-                <el-form-item label="电话：">
-                    <el-input v-model="ruleForm.tourTelphone" placeholder="请填写电话号码" maxlength="20"></el-input>
-                </el-form-item>
-                <el-form-item prop="email" label="邮箱：">
-                    <el-input v-model="ruleForm.tourMail" placeholder="请填写e-mail" maxlength="25"></el-input>
-                </el-form-item>
-                <el-form-item prop="address" label="地址：">
-                    <el-input v-model="ruleForm.tourAddress" placeholder="请填写地址" maxlength="50"></el-input>
-                </el-form-item>
-                <el-form-item prop="email" label="传真：">
-                    <el-input v-model="ruleForm.tourFox" placeholder="请填写传真" maxlength="20"></el-input>
-                </el-form-item>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="类型：" v-if="isAdd" class="required-label">
+                            <el-select v-model="ruleForm.tourType" placeholder="请选择类型">
+                                <el-option
+                                v-for="item in userType"
+                                :key="item.codeCode"
+                                :label="item.codeName"
+                                :value="item.codeCode">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="账号：" class="required-label">
+                            <el-input v-model="ruleForm.tourAccount" placeholder="请填写账号" :disabled="isAdd ? false : true" maxlength="20"></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="密码：" v-if="isAdd" class="required-label">
+                            <el-input v-model="ruleForm.tourPassword" placeholder="请填写密码" maxlength="40"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="名称：" class="required-label">
+                            <el-input v-model="ruleForm.tourName" placeholder="请填写名字" :disabled="isAdd ? false : true" maxlength="40"></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="英文名：">
+                            <el-input v-model="ruleForm.tourEnglishName" placeholder="请填写英文名" maxlength="30"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="性别：" class="required-label">
+                            <el-radio v-model="ruleForm.tourSex" :label="1">男</el-radio>
+                            <el-radio v-model="ruleForm.tourSex" :label="2">女</el-radio>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="状态：" class="required-label">
+                            <el-radio v-model="ruleForm.isenable" :label="1">有效</el-radio>
+                            <el-radio v-model="ruleForm.isenable" :label="0">无效</el-radio>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="电话：">
+                            <el-input type="text" v-model="ruleForm.tourTelphone" placeholder="请填写电话号码" oninput="if(value.length>20)value=value.slice(0,20)" onkeyup="(this.v=function(){this.value=this.value.replace(/[^0-9-]+/,'');}).call(this)" onblur="this.v();"></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item prop="email" label="邮箱：">
+                            <el-input type="e-mail" v-model="ruleForm.tourMail" placeholder="请填写e-mail" maxlength="25"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item prop="address" label="地址：">
+                            <el-input v-model="ruleForm.tourAddress" placeholder="请填写地址" maxlength="50"></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item prop="email" label="传真：">
+                            <el-input v-model="ruleForm.tourFox" placeholder="请填写传真" maxlength="20"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button type="" @click="cancelManage()">取 消</el-button>
@@ -182,6 +218,7 @@
         },
         created() {
             this.getData()
+            console.log(this.$route)
         },
         mounted() {
             this.querySearchData()
@@ -246,7 +283,6 @@
             // 搜索
             searchUser () {
                 let self = this
-                console.log(this.searchName)
                 let params = {tourAccount: self.searchAccount}
                 if (this.searchName == '') {
                     self.getData()
@@ -313,29 +349,29 @@
             // 修改
             updateInfo () {
                 let self = this
+                let regTelphone = /(^0\d{2,3}-\d{7,8}(-\d{1,6})?$)|(^0?1[34578]\d{9}$)/
+                let regEmail= /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/
+                if (self.ruleForm.tourTelphone) {
+                    if (!regTelphone.test(self.ruleForm.tourTelphone)) {
+                        self.$message({
+                            type: 'warning',
+                            message: '请填写正确的电话号码',
+                            center: true
+                        })
+                        return false
+                    }
+                }
+                if (self.ruleForm.tourMail) {
+                    if (!regEmail.test(self.ruleForm.tourMail)) {
+                        self.$message({
+                            type: 'warning',
+                            message: '请填写正确的邮箱',
+                            center: true
+                        })
+                        return false
+                    }
+                }
                 let parmams = this.ruleForm
-                // $.ajax({
-                //     type: 'post',
-                //     dataType: 'json',
-                //     contentType: 'application/json',
-                //     url: 'http://172.20.114.62:8082/tvmanage/user/updateUser',
-                //     data: JSON.stringify(parmams),
-                //     success: function (data) {
-                //         self.$message({
-                //             message: data.msg,
-                //             type: 'success',
-                //             center: true
-                //         })
-                //         self.editVisible = false
-                //     },
-                //     error: function (data) {
-                //         self.$message({
-                //             message: '错误',
-                //             type: 'error',
-                //             center: true
-                //         })
-                //     }
-                // })
                 crud.skyworthComplexUpdate({
                     url: '/api/user/updateUser',
                     param: parmams,
@@ -360,6 +396,71 @@
             // 新增用户
             addUser () {
                 let self = this
+                let regAccount = /[@#\$%\^&\*\s+]+/g
+                let regAccountCN = /[\u4e00-\u9fa5]+/g
+                let regTelphone = /(^0\d{2,3}-\d{7,8}(-\d{1,6})?$)|(^0?1[34578]\d{9}$)/
+                let regEmail= /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/
+                if (!self.ruleForm.tourAccount) {
+                        self.$message({
+                            type: 'warning',
+                            message: '请填写账号',
+                            center: true
+                        })
+                        return false
+                } else {
+                    if (regAccount.test(self.ruleForm.tourAccount)) {
+                        self.$message({
+                            type: 'warning',
+                            message: '请勿输入非法字符',
+                            center: true
+                        })
+                        return false
+                    }
+                    if (regAccountCN.test(self.ruleForm.tourAccount)) {
+                        self.$message({
+                            type: 'warning',
+                            message: '账号禁止使用中文',
+                            center: true
+                        })
+                        return false
+                    }
+                }
+                if (!self.ruleForm.tourPassword) {
+                        self.$message({
+                            type: 'warning',
+                            message: '请填写密码',
+                            center: true
+                        })
+                        return false
+                }
+                if (!self.ruleForm.tourName) {
+                        self.$message({
+                            type: 'warning',
+                            message: '请填写名字',
+                            center: true
+                        })
+                        return false
+                }
+                if (self.ruleForm.tourTelphone) {
+                    if (!regTelphone.test(self.ruleForm.tourTelphone)) {
+                        self.$message({
+                            type: 'warning',
+                            message: '请填写正确的电话号码',
+                            center: true
+                        })
+                        return false
+                    }
+                }
+                if (self.ruleForm.tourMail) {
+                    if (!regEmail.test(self.ruleForm.tourMail)) {
+                        self.$message({
+                            type: 'warning',
+                            message: '请填写正确的邮箱',
+                            center: true
+                        })
+                        return false
+                    }
+                }
                 let parmams = this.ruleForm
                 crud.skyworthComplexSave({
                     url: '/api/user/addUser',
@@ -385,26 +486,30 @@
             // 删除用户
             deleteUser () {
                 let self = this
-                crud.skyworthDelete({
-                    url: '/api/user/deleteUser' + '?tourId=' + self.ruleForm.tourId,
-                    param: '',
-                    success: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'success',
-                            center: true
-                        })
-                        self.getData()
-                        self.editVisible = false
-                    },
-                    error: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'error',
-                            center: true
-                        })
-                    }
+                this.$confirm('您确定删除吗？')
+                .then(_ => {
+                    crud.skyworthDelete({
+                        url: '/api/user/deleteUser' + '?tourId=' + self.ruleForm.tourId,
+                        param: '',
+                        success: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'success',
+                                center: true
+                            })
+                            self.getData()
+                            self.editVisible = false
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
                 })
+                .catch(_ => {})
             },
             // 获取下拉列表数据
             getSelectData (type) {
@@ -460,7 +565,6 @@
                 this.searchAccount = item.tourAccount
             },
             handleIconClick(ev) {
-                console.log(ev);
             }
         }
     }

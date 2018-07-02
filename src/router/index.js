@@ -29,11 +29,11 @@ export default new Router({
                     meta: { title: '用户' }
                 },
                 {
-                    // 基础信息管理
+                    // 基础数据管理
                     name: 'baseInfo',
                     path: '/baseInfo',
                     component: resolve => require(['../components/page/platform/base-info.vue'], resolve),
-                    meta: { title: '基础信息' }
+                    meta: { title: '基础数据' }
                 },
                 {
                     // 设备管理

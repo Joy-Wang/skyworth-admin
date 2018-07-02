@@ -55,6 +55,8 @@ export const skyworthSave = (obj) => {
     data: param,
     async: async,
     dataType: dataType,
+    crossDomain: true,
+    xhrFields: {withCredentials: true},
     success: function (data) {
       // loading && Indicator.close() // 关闭loading
       success(data)
@@ -94,6 +96,8 @@ export const skyworthComplexSave = (obj) => {
     data: JSON.stringify(param),
     async: async,
     dataType: dataType,
+    crossDomain: true,
+    xhrFields: {withCredentials: true},
     contentType: 'application/json',
     success: function (data) {
       // loading && Indicator.close() // 关闭loading
@@ -126,7 +130,6 @@ export const skyworthQuery = (obj) => {
   const success = obj.success
   let loading = obj.loading !== false
   // loading && Indicator.open('加载中...') // 打开loading
-  console.log(url)
   _dealPostParam(param)
   _$.ajax({
     url: url,
@@ -134,6 +137,8 @@ export const skyworthQuery = (obj) => {
     data: param,
     async: async,
     dataType: dataType,
+    crossDomain: true,
+    xhrFields: {withCredentials: true},
     success: function (data) {
       success(data)
       // loading && Indicator.close() // 关闭loading
@@ -173,6 +178,8 @@ export const skyworthComplexQuery = (obj) => {
     data: JSON.stringify(param),
     async: async,
     dataType: dataType,
+    crossDomain: true,
+    xhrFields: {withCredentials: true},
     contentType: 'application/json',
     success: function (data) {
       // loading && Indicator.close() // 关闭loading
@@ -205,7 +212,6 @@ export const skyworthDelete = (obj) => {
   const success = obj.success
   let loading = obj.loading !== false
   // loading && Indicator.open('加载中...') // 打开loading
-  console.log(url)
   _dealPostParam(param)
   _$.ajax({
     url: url,
@@ -213,6 +219,8 @@ export const skyworthDelete = (obj) => {
     data: param,
     async: async,
     dataType: dataType,
+    crossDomain: true,
+    xhrFields: {withCredentials: true},
     success: function (data) {
       success(data)
       // loading && Indicator.close() // 关闭loading
@@ -252,6 +260,8 @@ export const skyworthComplexDelete = (obj) => {
     data: JSON.stringify(param),
     async: async,
     dataType: dataType,
+    crossDomain: true,
+    xhrFields: {withCredentials: true},
     contentType: 'application/json',
     success: function (data) {
       // loading && Indicator.close() // 关闭loading

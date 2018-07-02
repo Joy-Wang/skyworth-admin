@@ -73,45 +73,10 @@
                         </template>
                     </el-table-column>
             </el-table>
-            <div v-if="0">
-                <div class="content-title">支持拖拽</div>
-                <div class="plugins-tips">
-                    Element UI自带上传组件。
-                    访问地址：<a href="http://element.eleme.io/#/zh-CN/component/upload" target="_blank">Element UI Upload</a>
-                </div>
-                <el-upload
-                    class="upload-demo"
-                    drag
-                    action="/api/posts/"
-                    multiple>
-                    <i class="el-icon-upload"></i>
-                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-                    <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
-                </el-upload>
-                <div class="content-title">支持裁剪</div>
-                <div class="plugins-tips">
-                    vue-cropperjs：一个封装了 cropperjs 的 Vue 组件。
-                    访问地址：<a href="https://github.com/Agontuk/vue-cropperjs" target="_blank">vue-cropperjs</a>
-                </div>
-                <div class="crop-demo">
-                    <img :src="cropImg" class="pre-img">
-                    <div class="crop-demo-btn">选择图片
-                        <input class="crop-input" type="file" name="image" accept="image/*" @change="setImage"/>
-                    </div>
-                </div>
-            
-                <el-dialog title="裁剪图片" :visible.sync="dialogVisible" width="30%">
-                    <vue-cropper ref='cropper' :src="imgSrc" :ready="cropImage" :zoom="cropImage" :cropmove="cropImage" style="width:100%;height:300px;"></vue-cropper>
-                    <span slot="footer" class="dialog-footer">
-                        <el-button @click="cancelCrop">取 消</el-button>
-                        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-                    </span>
-                </el-dialog>
-            </div>
         </div>
         
         <!-- 素材管理框 -->
-        <el-dialog :title=" isAdd ? '新增素材' : '修改素材'" :visible.sync="manageFileVisible" width="40%" @close='closeManage()' :close-on-click-modal='false'>
+        <el-dialog :title=" isAdd ? '新增素材' : '修改素材'" :visible.sync="manageFileVisible" width="40%" top='10vh' @close='closeManage()' class="file-dialog" :close-on-click-modal='false'>
             <el-form label-width="110px">
                 <el-form-item label="标题名称" class="required-label">
                     <el-input v-model="manageBaseInfoData.tomdName" placeholder="请输入标题名称"></el-input>
@@ -154,7 +119,7 @@
                         accept="image/png, image/jpeg"
                         :file-list="fileList">
                         <el-button size="small" type="primary">点击上传</el-button>
-                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                        <div slot="tip" class="el-upload__tip" :class="lessthanMaxSize ? '' : 'sky-red'">只能上传jpg/png文件，且不超过500kb</div>
                     </el-upload>
                 </el-form-item>
                 <el-form-item label="海报预览">
@@ -235,15 +200,13 @@
                 searchType: '',
                 manageFileVisible: false,
                 isAdd: true,
+                lessthanMaxSize: true,
                 imageUrl: '',
                 localImageUrl: '',
                 fileList: [],
                 defaultSrc: './static/img/img.jpg',
                 imgSrc: '',
-                cropImg: '',
-                dialogVisible: false,
-                url: './static/vuetable.json',
-                cur_page: 1
+                cropImg: ''
             }
         },
         created() {
@@ -375,7 +338,6 @@
                             data.tomdTypeName = self.chooseCodeName('tomdType', data.tomdType)
                             data.tomdSizeName = self.chooseCodeName('tomdSize', data.tomdSize)
                             data.tomdClickTypeName = self.chooseCodeName('tomdClickType', data.tomdClickType)
-                            console.log(data)
                             self.manageBaseInfoData = data
                         },
                         error: function (data) {
@@ -398,7 +360,6 @@
             addMaterial () {
                 let self = this
                 this.manageBaseInfoData.tomdPosterUrl = this.imageUrl
-                console.log(this.imageUrl, 'add')
                 let parmams = this.manageBaseInfoData
                 crud.skyworthComplexSave({
                     url: '/api/material/addMaterial',
@@ -449,25 +410,30 @@
             // 删除
             deleteMaterial () {
                 let self = this
-                crud.skyworthDelete({
-                    url: '/api/material/deleteMaterial?tomdId=' + self.manageBaseInfoData.tomdId,
-                    param: '',
-                    success: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'success',
-                            center: true
-                        })
-                        self.getData()
-                    },
-                    error: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'error',
-                            center: true
-                        })
-                    }
+                this.$confirm('您确定删除吗？')
+                .then(_ => {
+                    crud.skyworthDelete({
+                        url: '/api/material/deleteMaterial?tomdId=' + self.manageBaseInfoData.tomdId,
+                        param: '',
+                        success: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'success',
+                                center: true
+                            })
+                            self.getData()
+                            self.manageFileVisible = false
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
                 })
+                .catch(_ => {})
             },
             // 取消
             cancelManage () {
@@ -480,6 +446,7 @@
                 }
                 self.localImageUrl = ''
                 self.fileList = []
+                self.lessthanMaxSize = true
             },
             // 上传
             uploadUrl () {
@@ -487,7 +454,6 @@
                 return url
             },
             handleChange(file, fileList) { // 文件状态改变时
-                console.log(fileList)
                 // this.imageUrl = file.url
             },
             handleRemove(file, fileList) { // 文件列表移除文件时
@@ -498,13 +464,16 @@
             handleAvatarSuccess(res, file) { // 上传成功时
                 this.localImageUrl = URL.createObjectURL(file.raw);
                 this.imageUrl = res.data
-                // this.$refs.upload.clearFiles()
+                this.lessthanMaxSize = true
             },
             beforeAvatarUpload(file) { // 上传文件之前
-
+                let imageSize = file.size / 1024 < 500
+                if (!imageSize) {
+                    this.lessthanMaxSize = false
+                }
+                return imageSize
             },
             beforeRemove(file){ // 移除之前
-                console.log(file)
             },
             handleExceed() { // 文件数量超出限制时
 
@@ -538,28 +507,7 @@
                 return obj.codeName
             },
             // 备注
-            setImage(e){
-                const file = e.target.files[0];
-                if (!file.type.includes('image/')) {
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    this.dialogVisible = true;
-                    this.imgSrc = event.target.result;
-                    this.$refs.cropper && this.$refs.cropper.replace(event.target.result);
-                };
-                reader.readAsDataURL(file);
-            },
-            cropImage () {
-                this.cropImg = this.$refs.cropper.getCroppedCanvas().toDataURL();
-            },
-            cancelCrop(){
-                this.dialogVisible = false;
-                this.cropImg = this.defaultSrc;
-            },
             imageuploaded(res) {
-                console.log(res)
             },
             handleError(){
                 this.$notify.error({

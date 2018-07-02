@@ -1,16 +1,6 @@
 <template>
     <div>
-        <div class="crumbs">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-date"></i> 图表</el-breadcrumb-item>
-                <el-breadcrumb-item>基础图表</el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
         <div class="container">
-            <div class="plugins-tips">
-                vue-schart：vue.js封装sChart.js的图表组件。
-                访问地址：<a href="https://github.com/lin-xin/vue-schart" target="_blank">vue-schart</a>
-            </div>
             <div class="schart">
                 <div class="content-title">柱状图</div>
                 <schart canvasId="bar" width="500" height="400" :data="data1" type="bar" :options="options1"></schart>
@@ -47,14 +37,16 @@
                 {name:'2017',value:1450}
             ],
             data2 : [
-                {name:'短袖',value:1200},
-                {name:'休闲裤',value:1222},
-                {name:'连衣裙',value:1283},
-                {name:'外套',value:1314},
-                {name:'羽绒服',value:2314}
+                {name:'华南',value:1200},
+                {name:'华北',value:1222},
+                {name:'西北',value:1283},
+                {name:'东北',value:1314},
+                {name:'华东',value:2314},
+                {name:'西南',value:1883},
+                {name:'华中',value:890}
             ],
             options1: {
-                title: '某商店近年营业总额',
+                title: '印度地区销量',
                 bgColor: '#009688',
                 titleColor: '#ffffff',
                 fillColor: '#e0f2f1',
@@ -62,7 +54,7 @@
                 contentColor: '#999'
             },
             options2: {
-                title: '某商店各商品年度销量',
+                title: '中国各地区销售量',
                 bgColor: '#607d8b',
                 titleColor: '#ffffff',
                 legendColor: '#ffffff'

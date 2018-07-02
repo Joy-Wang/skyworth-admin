@@ -36,7 +36,7 @@
                         <a href="https://github.com/Joy-Wang/skyworth-admin" target="_blank">
                             <el-dropdown-item>Git地址</el-dropdown-item>
                         </a>
-                        <el-dropdown-item divided  command="loginout">退出登录</el-dropdown-item>
+                        <el-dropdown-item divided command="loginout">退出登录</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
             </div>
