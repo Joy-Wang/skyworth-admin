@@ -72,7 +72,7 @@
         </div>
 
         <!-- 基础信息管理框 -->
-        <el-dialog title="基础信息管理" :visible.sync="manageInfoVisible" width="35%" @close='cancelManage()' class="base-info-dialog" :close-on-click-modal='false'>
+        <el-dialog title="基础信息管理" :visible.sync="manageInfoVisible" width="35%" top="10vh" @close='cancelManage()' class="base-info-dialog" :close-on-click-modal='false'>
             <el-form :model="manageBaseInfoData" label-width="80px">
                 <el-form-item label="编码：" class="required-label">
                     <el-input v-if="isAdd" v-model="manageBaseInfoData.codeCode" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001" maxlength="20"></el-input>

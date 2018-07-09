@@ -81,26 +81,32 @@
                 <el-form-item label="标题名称" class="required-label">
                     <el-input v-model="manageBaseInfoData.tomdName" placeholder="请输入标题名称"></el-input>
                 </el-form-item>
-                <el-form-item label="素材类型" class="required-label">
-                    <el-select v-model="manageBaseInfoData.tomdTypeName" placeholder="请选择类型" @change="chooseTomdType">
-                        <el-option
-                        v-for="item in materialType"
-                        :key="item.codeCode"
-                        :label="item.codeName"
-                        :value="item.codeCode">
-                        </el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="布局大小" class="required-label">
-                    <el-select v-model="manageBaseInfoData.tomdSizeName" placeholder="请选择大小" @change="chooseTomdSize">
-                        <el-option
-                        v-for="item in materialSize"
-                        :key="item.codeCode"
-                        :label="item.codeName"
-                        :value="item.codeCode">
-                        </el-option>
-                    </el-select>
-                </el-form-item>
+                <el-row>
+                    <el-col :span="12">
+                        <el-form-item label="素材类型" class="required-label">
+                            <el-select v-model="manageBaseInfoData.tomdTypeName" placeholder="请选择类型" @change="chooseTomdType">
+                                <el-option
+                                v-for="item in materialType"
+                                :key="item.codeCode"
+                                :label="item.codeName"
+                                :value="item.codeCode">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-form-item label="布局大小" class="required-label">
+                            <el-select v-model="manageBaseInfoData.tomdSizeName" placeholder="请选择大小" @change="chooseTomdSize">
+                                <el-option
+                                v-for="item in materialSize"
+                                :key="item.codeCode"
+                                :label="item.codeName"
+                                :value="item.codeCode">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
                 <el-form-item label="海报">
                     <el-upload
                         ref='upload'
@@ -565,8 +571,10 @@
         margin-bottom: 10px;
     }
     .avatar-box{
-        width: 200px;
-        min-height: 50px;
+        // width: 200px;
+        // min-height: 50px;
+        width: 150px;
+        height: 150px;
         padding: 5px;
         border: 1px solid #cdd1dd;
         img{

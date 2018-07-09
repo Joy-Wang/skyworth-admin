@@ -112,7 +112,7 @@
                             </el-col>
                             <el-col :span="24">
                                 <el-form-item label="应用类型" class="required-label">
-                                    <el-select v-model="manageAppInfo.toanType" placeholder="请选择类型" @change="chooseTomdType">
+                                    <el-select v-model="manageAppInfo.toanType" placeholder="请选择类型">
                                         <el-option
                                         v-for="item in appType"
                                         :key="item.codeCode"
@@ -145,69 +145,67 @@
                     </el-upload>
                 </el-form-item>
                 <el-row>
-                    <el-col :span="12">
+                    <el-col :span="24">
                         <el-form-item label="海报">
-                            <el-upload
-                            ref="uploadH1"
-                            class="file-upload-h1"
-                            :action="uploadUrl()"
-                            :on-change="handleChangeH1"
-                            :on-success="handleAvatarSuccessH1"
-                            :before-upload="beforeAvatarUploadH1"
-                            :on-preview="handlePreviewH1"
-                            :on-remove="handleRemoveH1"
-                            :before-remove="beforeRemoveH1"
-                            :limit="1"
-                            :auto-upload="true"
-                            :on-exceed="handleExceedH1"
-                            accept="image/png, image/jpeg"
-                            :show-file-list='false'>上传海报1
-                            <img :src="localImageUrlH1" v-if="localImageUrlH1 != ''">
-                            </el-upload>
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="">
-                            <el-upload
-                            ref="uploadH2"
-                            class="file-upload-h1"
-                            :action="uploadUrl()"
-                            :on-change="handleChangeH1"
-                            :on-success="handleAvatarSuccessH2"
-                            :before-upload="beforeAvatarUploadH1"
-                            :on-preview="handlePreviewH2"
-                            :on-remove="handleRemoveH1"
-                            :before-remove="beforeRemoveH1"
-                            :limit="1"
-                            :auto-upload="true"
-                            :on-exceed="handleExceedH1"
-                            accept="image/png, image/jpeg"
-                            :show-file-list='false'>上传海报2
-                            <img :src="localImageUrlH2" v-if="localImageUrlH2 != ''">
-                            </el-upload>
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row>
-                    <el-col :span="12">
-                        <el-form-item label="">
-                            <el-upload
-                            ref="uploadH3"
-                            class="file-upload-h1"
-                            :action="uploadUrl()"
-                            :on-change="handleChangeH1"
-                            :on-success="handleAvatarSuccessH3"
-                            :before-upload="beforeAvatarUploadH1"
-                            :on-preview="handlePreviewH3"
-                            :on-remove="handleRemoveH1"
-                            :before-remove="beforeRemoveH1"
-                            :limit="1"
-                            :auto-upload="true"
-                            :on-exceed="handleExceedH1"
-                            accept="image/png, image/jpeg"
-                            :show-file-list='false'>上传海报3
-                            <img :src="localImageUrlH3" v-if="localImageUrlH3 != ''">
-                            </el-upload>
+                            <el-row>
+                                <el-col :span="8" style="width:32%;">
+                                    <el-upload
+                                    ref="uploadH1"
+                                    class="file-upload-h1"
+                                    :action="uploadUrl()"
+                                    :on-change="handleChangeH1"
+                                    :on-success="handleAvatarSuccessH1"
+                                    :before-upload="beforeAvatarUploadH1"
+                                    :on-preview="handlePreviewH1"
+                                    :on-remove="handleRemoveH1"
+                                    :before-remove="beforeRemoveH1"
+                                    :limit="1"
+                                    :auto-upload="true"
+                                    :on-exceed="handleExceedH1"
+                                    accept="image/png, image/jpeg"
+                                    :show-file-list='false'>上传海报1
+                                    <img :src="localImageUrlH1" v-if="localImageUrlH1 != ''">
+                                    </el-upload>
+                                </el-col>
+                                <el-col :span="8" style="width: 32%; margin: 0 2%;">
+                                    <el-upload
+                                    ref="uploadH2"
+                                    class="file-upload-h1"
+                                    :action="uploadUrl()"
+                                    :on-change="handleChangeH1"
+                                    :on-success="handleAvatarSuccessH2"
+                                    :before-upload="beforeAvatarUploadH1"
+                                    :on-preview="handlePreviewH2"
+                                    :on-remove="handleRemoveH1"
+                                    :before-remove="beforeRemoveH1"
+                                    :limit="1"
+                                    :auto-upload="true"
+                                    :on-exceed="handleExceedH1"
+                                    accept="image/png, image/jpeg"
+                                    :show-file-list='false'>上传海报2
+                                    <img :src="localImageUrlH2" v-if="localImageUrlH2 != ''">
+                                    </el-upload>
+                                </el-col>
+                                <el-col :span="8" style="width: 32%;">
+                                    <el-upload
+                                    ref="uploadH3"
+                                    class="file-upload-h1"
+                                    :action="uploadUrl()"
+                                    :on-change="handleChangeH1"
+                                    :on-success="handleAvatarSuccessH3"
+                                    :before-upload="beforeAvatarUploadH1"
+                                    :on-preview="handlePreviewH3"
+                                    :on-remove="handleRemoveH1"
+                                    :before-remove="beforeRemoveH1"
+                                    :limit="1"
+                                    :auto-upload="true"
+                                    :on-exceed="handleExceedH1"
+                                    accept="image/png, image/jpeg"
+                                    :show-file-list='false'>上传海报3
+                                    <img :src="localImageUrlH3" v-if="localImageUrlH3 != ''">
+                                    </el-upload>
+                                </el-col>
+                            </el-row>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -271,8 +269,8 @@
                     </el-col>
                     <el-col :span="8">
                         <el-form-item label="应用大小" class="required-label">
-                            <div>{{manageAppInfo.toanSize}}</div>
-                            <!-- <el-input v-model="manageAppInfo.toanSize"></el-input> -->
+                            <!-- <div>{{manageAppInfo.toanSize}}</div> -->
+                            <el-input v-model="manageAppInfo.toanSize" disabled></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="8">
@@ -289,14 +287,14 @@
                     </el-col>
                     <el-col :span="8">
                         <el-form-item label="评分">
-                            <div>{{manageAppInfo.toanScore}}</div>
-                            <!-- <el-input v-model="manageAppInfo.toanScore"></el-input> -->
+                            <!-- <div>{{manageAppInfo.toanScore}}</div> -->
+                            <el-input v-model="manageAppInfo.toanScore"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="8">
                         <el-form-item label="下载总量">
-                            <div>{{manageAppInfo.toanLoadTotals}}</div>
-                            <!-- <el-input v-model="manageAppInfo.toanLoadTotals"></el-input> -->
+                            <!-- <div>{{manageAppInfo.toanLoadTotals}}</div> -->
+                            <el-input v-model="manageAppInfo.toanLoadTotals" disabled></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -352,7 +350,7 @@
                     toanAgeGrading: '',
                     toanVersion: '',
                     toanScore: '',
-                    toanLoadTotals: '',
+                    toanLoadTotals: 0,
                     toanRemark: '',
                     toanUrl: '',
                     toanStatus: 1,
@@ -371,25 +369,8 @@
                 appType: [], // APP类型
                 toanUrl: '',
                 isApk: true,
-                manageBaseInfoData: {
-                    tomdType: '1',
-                    tomdTypeName: '图片',
-                    tomdName: '',
-                    tomdSize: '1',
-                    tomdSizeName: '1x1',
-                    tomdPosterUrl: '',
-                    tomdClickType: '1',
-                    tomdClickTypeName: '启动应用',
-                    tomdClick: '',
-                    tomdVersion: '',
-                    tomdRemark: '',
-                    isenable: 1
-                },
                 baseSeverUrl: this.baseSeverUrl(),
                 searchName: '',
-                materialType: [],
-                materialSize: [],
-                materialClick: [],
                 searchType: '',
                 manageAppVisible: false,
                 isAdd: true,
@@ -755,15 +736,6 @@
                 this.imageUrlH3 = res.data
                 this.manageAppInfo.toanPosterThird = res.data
                 this.$refs.uploadH3.clearFiles()
-            },
-            chooseTomdType (val) {
-                this.manageBaseInfoData.tomdType = val
-            },
-            chooseTomdSize (val) {
-                this.manageBaseInfoData.tomdSize = val
-            },
-            chooseTomdClickType (val) {
-                this.manageBaseInfoData.tomdClickType = val
             },
             // 筛选codeName
             chooseCodeName (type, value) {

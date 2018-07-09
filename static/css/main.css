@@ -189,7 +189,7 @@ a {
     padding: 0 20px;
 }
 .base-info-dialog .el-dialog .el-dialog__body{
-    max-height: 50vh;
+    max-height: 60vh;
     padding: 10px 20px;
 }
 .project-dialog .el-dialog .el-dialog__body{
@@ -241,6 +241,12 @@ a {
     width: auto;
     height: auto;
     border: none;
+    float: left;
+}
+
+.file-upload .el-upload__tip{
+    margin-top: 0;
+    margin-left: 95px;
 }
 
 .file-upload-head{
@@ -271,7 +277,8 @@ a {
 }
 .file-upload-h1 .el-upload--text{
     width: 100%;
-    line-height: 180px;
+    line-height: 200px;
+    height: 200px;
     background-color:rgba(0,0,0,0);
 }
 

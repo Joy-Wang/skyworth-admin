@@ -76,23 +76,43 @@
             <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column label="编码" width="200" header-align="center">
+                <el-table-column label="编码" width="150" header-align="center">
                     <template slot-scope="scope">
-                        <a class="click-name" @click="manageProject(scope.row.toseId)">{{ scope.row.toseCode }}</a>
+                        <a class="click-name" :style="scope.row.rightFlag ? 'fontWeight: bold' : ''" @click="manageProject(scope.row.toseId)">{{ scope.row.toseCode }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="toseName" label="名称" width="200" header-align="center">
+                <el-table-column prop="toseName" label="名称" width="150" header-align="center">
                 </el-table-column>
                 <el-table-column prop="toseUnionCustName" label="客户" header-align="center">
                 </el-table-column>
                 <el-table-column prop="toseVersion" label="版本" width="100" header-align="center">
                 </el-table-column>
-                <el-table-column prop="toseLevel" label="优先级" width="100" header-align="center">
+                <el-table-column prop="toseLevel" label="优先级" width="80" header-align="center">
                 </el-table-column>
                 <el-table-column label="状态" width="80" header-align="center" align="center">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.isenable == 1" class="sky-blue">有效</span>
+                        <span v-if="scope.row.isenable == 1" class="sky-green">有效</span>
                         <span v-else-if="scope.row.isenable == 0" class="sky-red">无效</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="单据状态" width="100" header-align="center" align="center">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.toseStatus == 1" class="sky-yellow" :style="scope.row.rightFlag ? 'fontWeight: bold' : ''">{{scope.row.toseStatusName}}</span>
+                        <span v-if="scope.row.toseStatus == 2" class="sky-blue" :style="scope.row.rightFlag ? 'fontWeight: bold' : ''">{{scope.row.toseStatusName}}</span>
+                        <span v-if="scope.row.toseStatus == 3" class="sky-green" :style="scope.row.rightFlag ? 'fontWeight: bold' : ''">{{scope.row.toseStatusName}}</span>
+                        <span v-if="scope.row.toseStatus == 4" class="sky-red" :style="scope.row.rightFlag ? 'fontWeight: bold' : ''">{{scope.row.toseStatusName}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="审核操作" width="150" header-align="center" align="center" fixed="right">
+                    <template slot-scope="scope" v-if="scope.row.rightFlag">
+                        <el-button
+                        size="mini"
+                        type="success"
+                        @click="workflowReview(scope.row.toseId, true)">通过</el-button>
+                        <el-button
+                        size="mini"
+                        type="danger"
+                        @click="workflowReview(scope.row.toseId, false)">退回</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -121,11 +141,12 @@
                     pageSize: 10,
                     total: 0
                 },
+                fontBold: {
+                    fontWeight: 'bold'
+                },
                 searchCode: '',
                 searchName: '',
                 searchCust: '',
-                state2: '',
-                state3: '',
                 idx: -1
             }
         },
@@ -295,6 +316,34 @@
             // 新增方案
             addProject () {
                 this.$router.push({name: 'projectAdd'});
+            },
+            // 单据审核
+            workflowReview (toseId, type) {
+                let self = this
+                let msg = type ? '确定审核通过吗？' : '确定退回该审核吗？'
+                this.$confirm(msg).then(_ => {
+                    let params = {mid: toseId, result: type, wfld: 'schemeProcess'}
+                    return
+                    crud.skyworthComplexSave({
+                        url: '/api/activiti/workflowReview',
+                        param: params,
+                        success: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'success',
+                                center: true
+                            })
+                            self.getData()
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                }).catch(_ => {})
             },
             // 备注
             formatter(row, column) {
