@@ -69,7 +69,7 @@
                     </div>
                 </el-col>
             </el-row>
-            <div class="type-box"><a :class="isMonth ? 'activeT' : ''" @click="changeType(true)">月</a> / <a :class="isMonth ? '' : 'activeT'" @click="changeType(false)">周</a></div>
+            <div class="type-box"><a :class="isMonth ? 'activeT' : ''" @click="changeType(true)" title="月下载量">月</a> / <a :class="isMonth ? '' : 'activeT'" @click="changeType(false)" title="周下载量">周</a></div>
             <el-row>
                 <el-col :span="24">
                     <div id="lineBox">
@@ -106,6 +106,8 @@
             firstTime: true, // 标识第一次进入
             selectionTotal: 0,
             isMonth: true,
+            weekList: [],
+            monthAndWeekSaveType: true,
             getRowKeys(row) {
                 return row.toanId
             }
@@ -116,6 +118,7 @@
         },
         mounted() {
             let self = this
+            this.weekList = this.setWeek()
             setTimeout(function () {
                 for (let i = 0; i < self.tableData.length; i++) {
                     self.$refs.multipleTable.toggleRowSelection(self.tableData[i])
@@ -189,12 +192,12 @@
                 })
                 if (self.firstTime && selection.length == self.selectionTotal) { // 第一次
                     let selectNull = selection.length == 0 ? true : false
-                    self.queryAppLoadDetailsByMonth(selectNull)
+                    self.queryAppLoadDetails(self.monthAndWeekSaveType, true, selectNull)
                     self.SetEchartsData(selection, selectNull)
                     self.firstTime = false
                 } else if (!self.firstTime) { // 非第一次
                     let selectNull = selection.length == 0 ? true : false
-                    self.queryAppLoadDetailsByMonth(selectNull)
+                    self.queryAppLoadDetails(self.monthAndWeekSaveType, true, selectNull)
                     self.SetEchartsData(selection, selectNull)
                 }
             },
@@ -209,7 +212,7 @@
                 if (selectNull) {
                     let option ={
                         name: '访问来源',
-                        title: { text: '点击量饼状图' },
+                        title: { text: '下载总量饼状图' },
                         tooltip : {
                             trigger: 'item',
                             formatter: "{b} : {c} ({d}%)"
@@ -242,7 +245,7 @@
                 }
                 let option ={
                     name: '访问来源',
-                    title: { text: '点击量饼状图' },
+                    title: { text: '下载总量饼状图' },
                     tooltip : {
                         trigger: 'item',
                         formatter: "{b} : {c} ({d}%)"
@@ -260,19 +263,20 @@
                 pieChart.setOption(option, true)
             },
             // 根据ID获取每月点击量信息
-            queryAppLoadDetailsByMonth(selectNull) {
+            queryAppLoadDetails(dateType, isCheck, selectNull) {
                 let self = this
                 // 折线图
                 let lineBox = $('#lineBox')
                 let lineEchartContainer = $('#lineEchartContainer')
                 lineEchartContainer.css('width', lineBox.width())
                 lineEchartContainer.css('height', lineBox.height())
-                let lineChart = echarts.init(document.getElementById('lineEchartContainer'), 'dark');
+                let lineChart = echarts.init(document.getElementById('lineEchartContainer'), 'dark')
+                let titleText = this.isMonth ? '月下载量折线图' : '周下载量折线图'
                 // lineChart.showLoading()
                 let params = {idx: self.multipleSelectionId.join(',')}
                 
                 let option = {
-                    title: { text: '点击量折线图' },
+                    title: { text: titleText },
                     tooltip: {
                         // trigger: 'axis'
                     },
@@ -296,42 +300,98 @@
                     return false
                 }
 
-                crud.skyworthGet({
-                    url: '/api/app/queryAppLoadDetailsByMonth',
-                    param: params,
-                    success: function (data) {
-                        let dataB = data
-                        let nameList = []
-                        let seriesList = []
-                        let monthList = []
-                        for (let i=0; i<dataB.length; i++) {
-                            let nullSeries = {}
-                            if (dataB[i].data.length > 6) {
-                                dataB[i].data.splice(0,dataB[i].data.length-6)
-                            }
-                            nullSeries.name = dataB[i].name
-                            nullSeries.type = 'line'
-                            nullSeries.smooth = true
-                            nullSeries.data = (dataB[i].data.map((item) => {return item.tNum}))
-                            seriesList.push(nullSeries)
-                            nameList.push(dataB[i].name)
-                        }
-                        monthList.push(dataB[0].data.map((item) => {return item.tMonth}))
-                        option.legend.data = nameList
-                        option.xAxis.data = monthList[0]
-                        option.series = seriesList
-                        lineChart.clear()
-                        lineChart.setOption(option, true)
-                    },
-                    error: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'error',
-                            center: true
-                        })
-                        // lineChart.showLoading()
+                if (!isCheck) { // 表示不是通过多选框进入，通过月与周切换进入
+                    if (dateType == self.monthAndWeekSaveType) { // 点击同一个月或周
+                        return false
+                    } else {
+                        self.monthAndWeekSaveType = dateType
                     }
-                })
+                }
+
+                if (dateType) {
+                    crud.skyworthGet({
+                        url: '/api/app/queryAppLoadDetailsByMonth',
+                        param: params,
+                        success: function (data) {
+                            let dataB = data
+                            let nameList = []
+                            let seriesList = []
+                            let monthList = []
+                            for (let i=0; i<dataB.length; i++) {
+                                let nullSeries = {}
+                                if (dataB[i].data.length > 6) {
+                                    dataB[i].data.splice(0,dataB[i].data.length-6)
+                                }
+                                nullSeries.name = dataB[i].name
+                                nullSeries.type = 'line'
+                                nullSeries.smooth = true
+                                nullSeries.data = (dataB[i].data.map((item) => {return item.tNum}))
+                                seriesList.push(nullSeries)
+                                nameList.push(dataB[i].name)
+                            }
+                            monthList.push(dataB[0].data.map((item) => {return item.tMonth}))
+                            option.legend.data = nameList
+                            option.xAxis.data = monthList[0]
+                            option.series = seriesList
+                            lineChart.clear()
+                            lineChart.setOption(option, true)
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                            // lineChart.showLoading()
+                        }
+                    })
+                } else {
+                    crud.skyworthGet({
+                        url: '/api/app/queryAppLoadDetailsByWeek',
+                        param: params,
+                        success: function (data) {
+                            let dataB = data
+                            let nameList = []
+                            let seriesList = []
+                            for (let i=0; i<dataB.length; i++) {
+                                let nullSeries = {}
+                                let dataLength = dataB[i].data.length
+                                let oneData = dataB[i].data.map((item) => {return item.tWeek})
+                                let nullData = []
+                                for (let j=0; j<self.weekList.length; j++) {
+                                    if (oneData.indexOf(self.weekList[j]) > -1) {
+                                        let obj = {}
+                                        obj = dataB[i].data.find((item) => {
+                                        　　return item.tWeek == self.weekList[j]
+                                        })
+                                        nullData.push(obj.tNum)
+                                    } else {
+                                        nullData.push('0')
+                                    }
+                                }
+                                nullSeries.name = dataB[i].name
+                                nullSeries.type = 'line'
+                                nullSeries.smooth = true
+                                nullSeries.data = nullData
+                                seriesList.push(nullSeries)
+                                nameList.push(dataB[i].name)
+                            }
+                            option.legend.data = nameList
+                            option.xAxis.data = self.weekList[0]
+                            option.series = seriesList
+                            lineChart.clear()
+                            lineChart.setOption(option, true)
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                            // lineChart.showLoading()
+                        }
+                    })
+                }
             },
             // 搜索
             search () {
@@ -362,6 +422,23 @@
             // 切换月和周
             changeType(type) {
                 this.isMonth = type
+                this.queryAppLoadDetails(type)
+            },
+            setWeek () {
+                let d1 = new Date()
+                let d2 = new Date()
+                d2.setMonth(0)
+                d2.setDate(1)
+                let rq = d1-d2
+                let s1 = Math.ceil(rq/(24*60*60*1000))
+                let sWeek = Math.ceil(s1/7)
+                let week = []
+                if (sWeek >= 6) {
+                    for (let i=0; i < 6; i++) {
+                        week.push((sWeek - i))
+                    }
+                }
+                return week.reverse()
             }
         }
     }
