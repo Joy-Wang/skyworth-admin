@@ -76,18 +76,18 @@
             <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column label="编码" width="150" header-align="center">
+                <el-table-column label="编码" width="150" header-align="center" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <a class="click-name" :style="scope.row.rightFlag ? 'fontWeight: bold' : ''" @click="manageProject(scope.row.toseId)">{{ scope.row.toseCode }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="toseName" label="名称" width="150" header-align="center">
+                <el-table-column prop="toseName" label="名称" width="150" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toseUnionCustName" label="客户" header-align="center">
+                <el-table-column prop="toseUnionCustName" label="客户" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toseVersion" label="版本" width="100" header-align="center">
+                <el-table-column prop="toseVersion" label="版本" width="100" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toseLevel" label="优先级" width="80" header-align="center">
+                <el-table-column prop="toseLevel" label="优先级" width="80" header-align="center" show-overflow-tooltip>
                 </el-table-column>
                 <el-table-column label="状态" width="80" header-align="center" align="center">
                     <template slot-scope="scope">
@@ -103,15 +103,17 @@
                         <span v-if="scope.row.toseStatus == 4" class="sky-red" :style="scope.row.rightFlag ? 'fontWeight: bold' : ''">{{scope.row.toseStatusName}}</span>
                     </template>
                 </el-table-column>
-                <el-table-column label="审核操作" width="150" header-align="center" align="center" fixed="right">
+                <el-table-column label="审核操作" width="120" header-align="center" align="center" fixed="right">
                     <template slot-scope="scope" v-if="scope.row.rightFlag">
                         <el-button
                         size="mini"
                         type="success"
+                        class="pj-button"
                         @click="workflowReview(scope.row.toseId, true)">通过</el-button>
                         <el-button
                         size="mini"
                         type="danger"
+                        class="pj-button pj-button-r"
                         @click="workflowReview(scope.row.toseId, false)">退回</el-button>
                     </template>
                 </el-table-column>
@@ -153,16 +155,17 @@
         created() {
             let self = this
             this.getData();
-            eventBus.$on('projectGetList', () => {
-                self.getData()
-            })
+            // eventBus.$on('projectGetList', () => {
+            //     self.getData()
+            //     console.log('222')
+            // })
         },
         mounted () {
             this.GetSchemeNameSug()
             this.GetSchemeCustSug()
         },
         beforeDestroy () {
-            eventBus.$off('projectGetList')
+            // eventBus.$off('projectGetList')
         },
         computed: {
             data() {
@@ -183,6 +186,19 @@
                         }
                     }
                 })
+            },
+            projectListGet () {
+                return this.$store.state.projectListGet
+            }
+        },
+        watch: {
+            projectListGet: function (newVal, oldVal) {
+                let self = this
+                if (newVal) {
+                    setTimeout(function () {
+                        self.getData()
+                    }, 500)
+                }
             }
         },
         methods: {
@@ -207,8 +223,8 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.tableData = data.list
-                        self.pageQuery.total = data.total
+                        self.tableData = data.data.list
+                        self.pageQuery.total = data.data.total
                     },
                     error: function (data) {
                         self.$message({
@@ -226,7 +242,7 @@
                     url: '/api/scheme/GetSchemeNameSug',
                     param: '',
                     success: function (data) {
-                        self.restaurants = data
+                        self.restaurants = data.data
                     },
                     error: function (data) {
                         self.$message({
@@ -244,7 +260,7 @@
                     url: '/api/scheme/GetSchemeCustSug',
                     param: '',
                     success: function (data) {
-                        self.restaurantsCust = data
+                        self.restaurantsCust = data.data
                     },
                     error: function (data) {
                         self.$message({
@@ -266,7 +282,8 @@
                         url: '/api/scheme/querySchemeList',
                         param: params,
                         success: function (data) {
-                            self.tableData = data.list
+                            self.tableData = data.data.list
+                            self.pageQuery.total = data.data.total
                         },
                         error: function (data) {
                             self.$message({
@@ -280,6 +297,7 @@
             },
             // 修改
             manageProject (id) {
+                this.$store.dispatch('actionProjectHomeToEdit')
                 this.$router.push({
                     name: 'projectEdit'
                 })
@@ -292,16 +310,21 @@
                 // 调用 callback 返回建议列表的数据
                 cb(results);
             },
+            // 创建筛选
+            createFilter(queryString) {
+                return (restaurant) => {
+                return (restaurant.toseName.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                };
+            },
             querySearchCust(queryString, cb) {
                 var restaurantsCust = this.restaurantsCust;
-                var results = queryString ? restaurantsCust.filter(this.createFilter(queryString)) : restaurantsCust;
+                var results = queryString ? restaurantsCust.filter(this.createFilterCust(queryString)) : restaurantsCust;
                 // 调用 callback 返回建议列表的数据
                 cb(results);
             },
-            // 清楚筛选
-            createFilter(queryString) {
+            createFilterCust(queryString) {
                 return (restaurant) => {
-                return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                return (restaurant.toseUnionCustName.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
                 };
             },
             handleSelect(item) {
@@ -322,9 +345,8 @@
                 let self = this
                 let msg = type ? '确定审核通过吗？' : '确定退回该审核吗？'
                 this.$confirm(msg).then(_ => {
-                    let params = {mid: toseId, result: type, wfld: 'schemeProcess'}
-                    return
-                    crud.skyworthComplexSave({
+                    let params = {mid: toseId, result: type, wfld: 'SchemeProcess'}
+                    crud.skyworthSave({
                         url: '/api/activiti/workflowReview',
                         param: params,
                         success: function (data) {
@@ -377,5 +399,11 @@
     .page-box{
         text-align: right;
         margin-bottom: 10px;
+    }
+    .pj-button{
+        padding: 3px 8px;
+    }
+    .pj-button-r{
+        margin-left: 4px;
     }
 </style>

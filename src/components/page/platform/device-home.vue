@@ -9,7 +9,7 @@
                             <el-col :span="7">
                                 <el-form-item label="名称 / 编码" label-width="80px">
                                     <el-autocomplete
-                                    popper-class="my-autocomplete"
+                                    popper-class="device-autocomplete"
                                     v-model="searchName"
                                     :fetch-suggestions="querySearch"
                                     placeholder="请输入名称"
@@ -39,7 +39,7 @@
                             </el-col>
                             <el-col :span="5">
                                 <el-button type="primary" icon="search" @click="searchDevice()">查询</el-button>
-                                <el-button type="primary" icon="search" @click="manageDevice(true)">新增</el-button>
+                                <el-button type="primary" icon="search" @click="gotoDeviceAdd()">新增</el-button>
                             </el-col>
                         </el-row>
                     </el-form>
@@ -63,20 +63,20 @@
             <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="toeiEquipmentName" label="名称" width="150" header-align="center">
+                <el-table-column prop="toeiEquipmentName" label="名称" width="150" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column label="编码" width="150" header-align="center">
+                <el-table-column label="编码" width="150" header-align="center" show-overflow-tooltip>
                     <template slot-scope="scope">
-                        <a class="click-name" @click="manageDevice(false, scope.row)">{{ scope.row.toeiEquipmentCode }}</a>
+                        <a class="click-name" @click="gotoDeviceEdit(scope.row)">{{ scope.row.toeiEquipmentCode }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="toeiEquipmentCountryName" label="使用国家" width="80" header-align="center" align="center">
+                <el-table-column prop="toeiEquipmentCountryName" label="使用国家" width="80" header-align="center" align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toeiDefaultSchemeName" label="默认主题" width="100" header-align="center">
+                <el-table-column prop="toeiDefaultSchemeName" label="默认主题" width="100" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toeiUseingSchemeName" label="当前主题" width="100" header-align="center">
+                <el-table-column prop="toeiUseingSchemeName" label="当前主题" width="100" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toeiRemark" label="备注" width="auto" header-align="center">
+                <el-table-column prop="toeiRemark" label="备注" width="auto" header-align="center" show-overflow-tooltip>
                 </el-table-column>
                 <el-table-column label="状态" width="80" header-align="center" align="center">
                     <template slot-scope="scope">
@@ -138,35 +138,39 @@
                 <el-row>
                     <el-col :span="12">
                         <el-form-item label="默认主题：">
-                            <el-input v-model="manageDeviceData.toeiDefaultSchemeName" disabled placeholder="请选择主题"></el-input>
+                            <el-input v-model="manageDeviceData.toeiDefaultSchemeName" disabled placeholder="无" :style="{maxWidth: '215px'}"></el-input>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <a class="link-device" @click="gotoTheme('default')">前往默认主题</a>
+                        <a class="link-device" :class="gotoDefaultTheme ? '' : 'link-device-disable'" @click="gotoDefaultTheme ? gotoTheme('default') : ''">前往默认主题</a>
+                        <!-- <a class="link-device" v-if="gotoDefaultTheme" @click="gotoTheme('default')">前往默认主题</a>
+                        <a class="link-device link-device-disable" v-else>前往默认主题</a> -->
                     </el-col>
                 </el-row>
                 <el-row>
                     <el-col :span="12">
                         <el-form-item label="当前主题：">
                             <el-autocomplete
-                            popper-class="my-autocomplete"
+                            popper-class="device-autocomplete"
                             v-model="manageDeviceData.toeiUseingSchemeName"
-                            :fetch-suggestions="querySearch"
+                            :fetch-suggestions="querySearchUseingScheme"
                             placeholder="请选择主题"
-                            @select="handleSelect">
+                            @select="handleSelectUseingScheme">
                                 <i
                                     class="el-icon-edit el-input__icon"
                                     slot="suffix"
                                     @click="handleIconClick">
                                 </i>
                                 <template slot-scope="{ item }">
-                                    <div class="name">{{ item.tourName }}</div>
+                                    <div class="name">{{ item.toseName }}</div>
                                 </template>
                             </el-autocomplete>
                         </el-form-item>
                     </el-col>
                     <el-col :span="12">
-                        <a class="link-device" @click="gotoTheme('using')">前往该主题</a>
+                        <a class="link-device" :class="gotoUsingTheme ? '' : 'link-device-disable'" @click="gotoUsingTheme ? gotoTheme('using') : ''">前往该主题</a>
+                        <!-- <a class="link-device" v-if="gotoUsingTheme" @click="gotoTheme('using')">前往该主题</a>
+                        <a class="link-device link-device-disable" v-else>前往该主题</a> -->
                     </el-col>
                 </el-row>
                 <el-form-item label="状态：" class="required-label">
@@ -186,7 +190,7 @@
             <span slot="footer" class="dialog-footer">
                 <el-button type="" @click="cancelManage()">取 消</el-button>
                 <el-button v-if="isAdd" type="primary" @click="addDevice()">提 交</el-button>
-                <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
+                <el-button v-if="!isAdd" type="primary" @click="updateInfo()">保 存</el-button>
                 <el-button v-if="!isAdd" type="danger" @click="deleteDevice()">删 除</el-button>
             </span>
         </el-dialog>
@@ -210,6 +214,7 @@
                 isAdd: true,
                 UCountry: '',
                 restaurants: [],
+                restaurantsUseingScheme: [],
                 searchName: '',
                 searchCode: '',
                 equipCore: [], // 机芯
@@ -236,6 +241,8 @@
                     pageSize: 10,
                     total: 0
                 },
+                gotoDefaultTheme: false,
+                gotoUsingTheme: false,
                 idx: -1
             }
         },
@@ -266,6 +273,35 @@
                         }
                     }
                 })
+            },
+            deviceAddClose () {
+                return this.$store.state.deviceAddClose
+            },
+            deviceEditClose () {
+                return this.$store.state.deviceEditClose
+            },
+            deviceEditDelete () {
+                return this.$store.state.deviceEditDelete
+            }
+        },
+        watch: {
+            deviceAddClose: function (newVal, oldVal) {
+                if (newVal) {
+                    this.getData()
+                }
+            },
+            deviceEditClose: function (newVal, oldVal) {
+                if (newVal) {
+                    let self = this
+                    setTimeout(function () {
+                        self.getData()
+                    }, 400)
+                }
+            },
+            deviceEditDelete: function (newVal, oldVal) {
+                if (newVal) {
+                    this.getData()
+                }
             }
         },
         methods: {
@@ -287,7 +323,7 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        let dataList = data.list
+                        let dataList = data.data.list
                         for (let i = 0; i < dataList.length; i++) {
                             let obj = {}
                             obj = self.country.find((item) => {
@@ -296,7 +332,7 @@
                             dataList[i].toeiEquipmentCountryName = obj.codeName
                         }
                         self.tableData = dataList
-                        self.pageQuery.total = data.total
+                        self.pageQuery.total = data.data.total
                     },
                     error: function (data) {
                         self.$message({
@@ -315,12 +351,12 @@
                     param: {codeType: type},
                     success: function (data) {
                         if (type == 'country') {
-                            self.country = data
+                            self.country = data.data
                             self.getData()
                         } else if (type == 'equip_core') {
-                            self.equipCore = data
+                            self.equipCore = data.data
                         } else if (type == 'equip_type') {
-                            self.equipType = data
+                            self.equipType = data.data
                         }
                     },
                     error: function (data) {
@@ -336,7 +372,6 @@
             searchDevice () {
                 let self = this
                 let params = {toeiEquipmentCode: self.searchCode, toeiEquipmentCountry: self.UCountry}
-                console.log(self.UCountry)
                 if (this.searchName == '' && this.UCountry == '') {
                     self.getData()
                 } else {
@@ -344,7 +379,8 @@
                         url: '/api/equip/queryEquipList',
                         param: params,
                         success: function (data) {
-                            self.tableData = data.list
+                            self.tableData = data.data.list
+                            self.pageQuery.total = data.data.total
                         },
                         error: function (data) {
                             self.$message({
@@ -356,17 +392,32 @@
                     })
                 }
             },
+            // 新增
+            gotoDeviceAdd () {
+                this.$store.dispatch('actionOpenDeviceAdd')
+                this.$router.push({
+                    name: 'deviceAdd'
+                })
+            },
+            // 修改
+            gotoDeviceEdit (data) {
+                this.setLocalStorage('toeiId', data.toeiId)
+                this.$store.dispatch('actionOpenDeviceEdit')
+                this.$router.push({
+                    name: 'deviceEdit'
+                })
+            },
+            /** 以下为弹框模式 */
             // 打开设备管理窗口
             manageDevice (view, data) {
                 let self = this
                 data ? data : ''
                 if ( view ) { // 新增
                     self.manageDeviceData.isenable = 1
-                    self.manageDeviceData.toeiEquipmentType = '8R92T'
-                    self.manageDeviceData.toeiEquipmentCore = 'U5'
-                    self.manageDeviceData.toeiEquipmentCountry = 'India'
+                    self.manageDeviceData.toeiEquipmentType = self.equipType[0].codeCode
+                    self.manageDeviceData.toeiEquipmentCore = self.equipCore[0].codeCode
+                    self.manageDeviceData.toeiEquipmentCountry = self.country[0].codeCode
                     self.selectChange()
-                    self.querySearchThemeData()
                     self.isAdd = view
                 } else { // 修改
                     let params = {toeiId: data.toeiId}
@@ -375,6 +426,8 @@
                         param: params,
                         success: function (data) {
                             self.manageDeviceData = data
+                            if (data.toeiDefaultScheme) self.gotoDefaultTheme = true
+                            if (data.toeiUseingScheme) self.gotoUsingTheme = true
                         },
                         error: function (data) {
                             self.$message({
@@ -470,27 +523,62 @@
             cancelManage () {
                 let self = this
                 this.manageDeviceVisible = false
+                this.gotoDefaultTheme = false
+                this.gotoUsingTheme = false
                 for (let key in self.manageDeviceData) { // 清空数据列表
                     if (key != 'isenable') {
                         self.manageDeviceData[key] = ''
                     }
                 }
             },
-            // 下拉框选项值改变，获取默认主题
+            // 下拉框选项值改变
             selectChange () {
                 let self = this
                 if (this.manageDeviceData.toeiEquipmentType != '' && this.manageDeviceData.toeiEquipmentCore != '' && this.manageDeviceData.toeiEquipmentCountry != '') {
-                    let parmams = {
+                    let params = {
                         toeiEquipmentCore: self.manageDeviceData.toeiEquipmentCore,
                         toeiEquipmentType: self.manageDeviceData.toeiEquipmentType,
                         toeiEquipmentCountry: self.manageDeviceData.toeiEquipmentCountry
                     }
+                    // 获取默认主题
                     crud.skyworthGet({
                         url: '/api/equip/getDefaultScheme',
-                        param: parmams,
+                        param: params,
                         success: function (data) {
-                            self.manageDeviceData.toeiDefaultSchemeName = data.toseName
-                            self.manageDeviceData.toeiDefaultScheme = data.toseId
+                            if (data.data) {
+                                self.manageDeviceData.toeiDefaultSchemeName = data.data.toseName
+                                self.manageDeviceData.toeiDefaultScheme = data.data.toseId
+                                self.gotoDefaultTheme = true
+                            } else {
+                                self.manageDeviceData.toeiDefaultSchemeName = ''
+                                self.manageDeviceData.toeiDefaultScheme = ''
+                                self.gotoDefaultTheme = false
+                            }
+                        },
+                        error: function (data) {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
+                    })
+                    // 获取当前主题模糊搜索数据
+                    self.restaurantsUseingScheme.length = 0
+                    crud.skyworthGet({
+                        url: '/api/equip/getSchemeList',
+                        param: params,
+                        success: function (data) {
+                            if (data.data) {
+                                let nullArr = {toseId: '', toseName: ''}
+                                nullArr.toseId = data.data.toseId
+                                nullArr.toseName = data.data.toseName
+                                self.restaurantsUseingScheme.push(nullArr)
+                            } else {
+                                let nullArr = {}
+                                self.restaurantsUseingScheme.push(nullArr)
+                            }
+                            console.log(self.restaurantsUseingScheme)
                         },
                         error: function (data) {
                             self.$message({
@@ -504,16 +592,33 @@
             },
             // 模糊搜索
             querySearch(queryString, cb) {
-                var restaurants = this.restaurants;
-                var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+                var restaurants = this.restaurants
+                var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants
                 // 调用 callback 返回建议列表的数据
-                cb(results);
+                cb(results)
             },
-            // 清楚筛选
+            // 创建筛选
             createFilter(queryString) {
+                this.searchCode = queryString
                 return (restaurant) => {
-                    return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-                };
+                    return (restaurant.tourName.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+                }
+            },
+            querySearchUseingScheme(queryString, cb) {
+                var restaurantsUseingScheme = this.restaurantsUseingScheme
+                var results = queryString ? restaurantsUseingScheme.filter(this.createFilterUseingScheme(queryString)) : restaurantsUseingScheme
+                cb(results)
+            },
+            // 创建筛选
+            createFilterUseingScheme(queryString) {
+                return (restaurant) => {
+                    if (restaurant.toseName.toLowerCase() == queryString.toLowerCase()) {
+                        this.gotoUsingTheme = true
+                    } else {
+                        this.gotoUsingTheme = false
+                    }
+                    return (restaurant.toseName.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+                }
             },
             // 名称模糊搜索数据来源
             querySearchData() {
@@ -522,7 +627,7 @@
                     url: '/api/equip/queryEquipByKey',
                     param: '',
                     success: function (data) {
-                        self.restaurants = data
+                        self.restaurants = data.data
                     },
                     error: function (data) {
                         self.$message({
@@ -533,38 +638,17 @@
                     }
                 })
             },
-            // 主题模糊搜索数据来源
-            querySearchThemeData() {
-                let self = this
-                if (this.manageDeviceData.toeiEquipmentType != '' && this.manageDeviceData.toeiEquipmentCore != '' && this.manageDeviceData.toeiEquipmentCountry != '') {
-                    let parmams = {
-                        toeiEquipmentCore: self.manageDeviceData.toeiEquipmentCore,
-                        toeiEquipmentType: self.manageDeviceData.toeiEquipmentType,
-                        toeiEquipmentCountry: self.manageDeviceData.toeiEquipmentCountry
-                    }
-                    crud.skyworthGet({
-                        url: '/api/equip/getSchemeList',
-                        param: parmams,
-                        success: function (data) {
-                            self.manageDeviceData.toeiUseingSchemeName = data.toseName
-                            self.manageDeviceData.toeiUseingScheme = data.toseId
-                        },
-                        error: function (data) {
-                            self.$message({
-                                message: data.msg,
-                                type: 'error',
-                                center: true
-                            })
-                        }
-                    })
-                }
-            },
             handleSelect(item) {
                 this.searchName = item.tourName
                 this.searchCode = item.tourAccount
             },
             handleIconClick(ev) {
                 console.log(ev)
+            },
+            handleSelectUseingScheme(item) {
+                this.manageDeviceData.toeiUseingSchemeName = item.toseName
+                this.manageDeviceData.toeiUseingScheme = item.toseId
+                this.gotoUsingTheme = true
             },
             // 前往主题
             gotoTheme (type) {
@@ -661,5 +745,8 @@
         color: #409EFF;
         cursor: pointer;
         text-decoration: underline;
+    }
+    .link-device-disable{
+        color: #dcdfe6;
     }
 </style>

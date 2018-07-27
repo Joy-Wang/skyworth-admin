@@ -59,22 +59,28 @@
                         <img class="file-table-img" :src="scope.row.toanIcon" />
                     </template>
                 </el-table-column>
-                <el-table-column label="应用名称" width="150" header-align="center">
+                <el-table-column label="应用名称" width="150" header-align="center" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <a class="click-name" @click="queryApplicationById(false, scope.row)">{{ scope.row.toanName }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="toanTypeName" label="分类" width="80" header-align="center" align="center">
+                <el-table-column prop="toanTypeName" label="分类" width="80" header-align="center" align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toanVersion" label="版本" width="80" header-align="center" align="center">
+                <el-table-column prop="toanVersion" label="版本" width="80" header-align="center" align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toanSize" label="应用大小" width="80" header-align="center" align="center">
+                <el-table-column prop="toanSize" label="应用大小(M)" width="90" header-align="center" align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toanLoadTotals" label="下载总量" width="80" header-align="center" align="center">
+                <el-table-column prop="toanLoadTotals" label="下载总量" width="80" header-align="center" align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toanRemark" label="描述" width="auto" header-align="center">
+                <el-table-column prop="toanRemark" label="描述" width="auto" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="toanStatus" label="审核状态" width="80" header-align="center" align="center">
+                <el-table-column label="审核状态" width="80" header-align="center" align="center">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.toanStatus == 1" class="sky-yellow">待审核</span>
+                        <span v-else-if="scope.row.toanStatus == 2" class="sky-blue">审核中</span>
+                        <span v-else-if="scope.row.toanStatus == 3" class="sky-green">审核完成</span>
+                        <span v-else-if="scope.row.toanStatus == 4" class="sky-red">审核不通过</span>
+                    </template>
                 </el-table-column>
             </el-table>
         </div>
@@ -335,7 +341,7 @@
                 tableData: [],
                 manageAppInfo:{
                     toanId: '',
-                    toanType: '1',
+                    toanType: '',
                     toanIcon: '',
                     toanName: '',
                     toanPosterFirst: '',
@@ -418,8 +424,8 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.setImg(data)
-                        self.pageQuery.total = data.total
+                        self.setImg(data.data)
+                        self.pageQuery.total = data.data.total
 
                     },
                     error: function (data) {
@@ -439,15 +445,15 @@
                     param: {codeType: type},
                     success: function (data) {
                         if (type == 'country') {
-                            self.country = data
+                            self.country = data.data
                         } else if (type == 'equip_core') {
-                            self.equipCore = data
+                            self.equipCore = data.data
                         } else if (type == 'equip_type') {
-                            self.equipType = data
+                            self.equipType = data.data
                         } else if (type == 'language') {
-                            self.language = data
+                            self.language = data.data
                         } else if (type == 'app_type') {
-                            self.appType = data
+                            self.appType = data.data
                         }
                     },
                     error: function (data) {
@@ -470,8 +476,8 @@
                         url: '/api/app/queryApplicationList',
                         param: params,
                         success: function (data) {
-                            self.setImg(data)
-                            self.pageQuery.total = data.total
+                            self.setImg(data.data)
+                            self.pageQuery.total = data.data.total
                         },
                         error: function (data) {
                             self.$message({
@@ -510,11 +516,21 @@
                 let self = this
                 data ? data : ''
                 if ( view ) { // 新增
-                    self.manageAppInfo.toanType = '1'
-                    self.manageAppInfo.toanEquipmentCore = 'U5'
-                    self.manageAppInfo.toanEquipmentType = '8R92T'
-                    self.manageAppInfo.toanEquipmentCountry = 'India'
-                    self.manageAppInfo.toanLanguage = 'English'
+                    if (self.appType != '') {
+                        self.manageAppInfo.toanType = self.appType[0].codeCode
+                    }
+                    if (self.equipCore != '') {
+                        self.manageAppInfo.toanEquipmentCore = self.equipCore[0].codeCode
+                    }
+                    if (self.equipType != '') {
+                        self.manageAppInfo.toanEquipmentType = self.equipType[0].codeCode
+                    }
+                    if (self.country != '') {
+                        self.manageAppInfo.toanEquipmentCountry = self.country[0].codeCode
+                    }
+                    if (self.language != '') {
+                        self.manageAppInfo.toanLanguage = self.language[0].codeCode
+                    }
                     self.manageAppInfo.isenable = 1
                     self.isAdd = view
                 } else { // 修改
@@ -523,11 +539,11 @@
                         url: '/api/app/queryApplicationById',
                         param: params,
                         success: function (data) {
-                            if (data.toanIcon != '') {
-                               self.toanIcon = self.baseSeverUrl + data.toanIcon
+                            if (data.data.toanIcon != '') {
+                               self.manageAppInfo.toanIcon = self.baseSeverUrl + data.data.toanIcon
                             }
-                            data.toanType = data.toanType.toString()
-                            self.editSetImg(data)
+                            data.data.toanType = data.data.toanType.toString()
+                            self.editSetImg(data.data)
                             // data.toanTypeName = self.chooseCodeName('toanType', data.toanType)
                         },
                         error: function (data) {
@@ -549,6 +565,62 @@
             // 新增app
             addApplication () {
                 let self = this
+                if (!this.manageAppInfo.toanName) {
+                    self.$message({
+                        message: '请填写应用名称',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageAppInfo.toanType) {
+                    self.$message({
+                        message: '应用类型不能为空，请前往平台管理-基础数据管理新增应用类型',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageAppInfo.toanUrl) {
+                    self.$message({
+                        message: '请上传APP',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageAppInfo.toanEquipmentCore) {
+                    self.$message({
+                        message: '机芯不能为空，请前往平台管理-基础数据管理新增机芯',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageAppInfo.toanEquipmentType) {
+                    self.$message({
+                        message: '机型不能为空，请前往平台管理-基础数据管理新增机型',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageAppInfo.toanEquipmentCountry) {
+                    self.$message({
+                        message: '国家不能为空，请前往平台管理-基础数据管理新增国家',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageAppInfo.toanLanguage) {
+                    self.$message({
+                        message: '语言不能为空，请前往平台管理-基础数据管理新增语言',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
                 this.manageAppInfo.toanIcon = this.imageUrl
                 let parmams = this.manageAppInfo
                 crud.skyworthComplexSave({

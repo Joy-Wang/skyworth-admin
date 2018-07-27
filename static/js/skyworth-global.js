@@ -22,7 +22,7 @@ exports.install = function (Vue, options) {
 
     // 定义服务器地址
     Vue.prototype.baseSeverUrl = function () {
-        return 'http://172.20.114.63:8082/tvmanage/'
+        return 'http://54.154.70.52:8080/'
     }
 
 };

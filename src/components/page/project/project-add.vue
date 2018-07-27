@@ -251,9 +251,9 @@
                 projectBaseInfo: {
                     toseCode: '1',
                     toseName: '',
-                    toseEquipmentCore: 'U5',
-                    toseEquipmentType: '8R92T',
-                    toseEquipmentCountry: 'India',
+                    toseEquipmentCore: '',
+                    toseEquipmentType: '',
+                    toseEquipmentCountry: '',
                     toseLanguage: '',
                     toseLevel: '1',
                     toseVersion: '',
@@ -413,7 +413,40 @@
             addProject () {
                 let self = this
                 this.projectBaseInfo.schemeDetail = this.todo
+                if (!this.projectBaseInfo.toseName) {
+                    this.$message({
+                        message: '请填写方案名称',
+                        type: 'warning',
+                        center: true
+                    })
+                    return
+                }
+                if(!this.projectBaseInfo.toseEquipmentType) {
+                    this.$message({
+                        message: '机型不能为空，请先前往平台管理-基础数据管理新增机型',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.projectBaseInfo.toseEquipmentCore) {
+                    this.$message({
+                        message: '机芯不能为空，请先前往平台管理-基础数据管理新增机芯',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.projectBaseInfo.toseEquipmentCountry) {
+                    this.$message({
+                        message: '使用国家不能为空，请先前往平台管理-基础数据管理新增国家',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
                 let params = this.projectBaseInfo
+                params.moduser = null
                 crud.skyworthComplexSave({
                     url: '/api/scheme/addScheme',
                     param: params,
@@ -423,9 +456,9 @@
                             type: 'success',
                             center: true
                         })
-                        self.$router.push({name: 'project'})
+                        // self.$router.push({name: 'project'})
                         eventBus.$emit('todo', '')
-                        eventBus.$emit('projectGetList', '')
+                        self.$store.dispatch('actionProjectGetList')
                         self.clearBaseInfo()
                     },
                     error: function (data) {
@@ -439,9 +472,9 @@
             },
             // 取消
             cancleAdd () {
-                eventBus.$emit('todo', '')
                 this.clearBaseInfo()
-                this.$router.push({name: 'project'})
+                eventBus.$emit('todo', '')
+                // this.$router.push({name: 'project'})
             },
             // 获取下拉列表数据
             getSelectData (type) {
@@ -451,13 +484,16 @@
                     param: {codeType: type},
                     success: function (data) {
                         if (type == 'country') {
-                            self.country = data
+                            self.country = data.data
+                            if (data.data != '') self.projectBaseInfo.toseEquipmentCountry = data.data[0].codeCode
                         } else if (type == 'equip_core') {
-                            self.equipCore = data
+                            self.equipCore = data.data
+                            if (data.data != '') self.projectBaseInfo.toseEquipmentCore = data.data[0].codeCode
                         } else if (type == 'equip_type') {
-                            self.equipType = data
+                            self.equipType = data.data
+                            if (data.data != '') self.projectBaseInfo.toseEquipmentType = data.data[0].codeCode
                         } else if (type == 'language') {
-                            self.language = data
+                            self.language = data.data
                         }
                     },
                     error: function (data) {
@@ -472,11 +508,17 @@
             // 初始化数据
             clearBaseInfo () {
                 let self = this
-                for (let key in self.projectBaseInfo) { // 新增清空数据列表
-                    if (key != 'isenable' && key != 'toseEquipmentCore' && key != 'toseEquipmentType' && key != 'toseEquipmentCountry' && key != 'toseLevel' && key != 'schemeDetail') {
-                        delete self.projectBaseInfo[key]
-                    }
-                }
+                // for (let key in self.projectBaseInfo) { // 新增清空数据列表
+                //     if (key != 'isenable' && key != 'toseEquipmentCore' && key != 'toseEquipmentType' && key != 'toseEquipmentCountry' && key != 'toseLevel' && key != 'schemeDetail') {
+                //         delete self.projectBaseInfo[key]
+                //     }
+                // }
+                this.projectBaseInfo.toseName = ''
+                this.projectBaseInfo.toseUnionCust = ''
+                this.projectBaseInfo.toseLevel = '1'
+                this.projectBaseInfo.toseVersion = ''
+                this.projectBaseInfo.toseRemark = ''
+                this.todo = []
             },
             // 选择国家
             selectCountry (val) {
@@ -489,8 +531,8 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.setImg(data)
-                        self.pageQuery.total = data.total
+                        self.setImg(data.data)
+                        self.pageQuery.total = data.data.total
                     },
                     error: function (data) {
                         self.$message({
@@ -528,6 +570,7 @@
                     self.todo = self.saveTodo   // 还原操作区域
                     self.doing = self.saveDoing     // 还原模板区域
                 }
+                console.log(event)
             },
             clone (event) {
             },
@@ -549,6 +592,7 @@
                 doingItem.size = this.doing[event.oldIndex].size
                 doingItem.class = this.doing[event.oldIndex].class
                 this.setSessionStorage('doingItem', JSON.stringify(doingItem))
+                console.log(JSON.stringify(doingItem), doingItem)
             },
             end (event) { // 移动结束后的钩子
                 if (event.to.id != 'doing') {
@@ -572,7 +616,7 @@
                     url: '/api/scheme/GetSchemeCustSug',
                     param: '',
                     success: function (data) {
-                        self.restaurants = data
+                        self.restaurants = data.data
                     },
                     error: function (data) {
                         self.$message({
@@ -593,7 +637,7 @@
             // 清除筛选
             createFilter(queryString) {
                 return (restaurant) => {
-                    return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                    return (restaurant.toseUnionCustName.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
                 };
             },
             // 素材管理

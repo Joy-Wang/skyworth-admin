@@ -49,13 +49,11 @@
                         let param = {account: self.ruleForm.username, password: self.ruleForm.password}
                         $.ajax({
                             type: 'post',
-                            url: '/api/user/login',
+                            url: 'http://54.154.70.52:8080/tvmanage/user/login',
                             data: param,
-                            success: function (data) {
+                            success: function (data, status, xhr) {
                                 if (data.code == '0008') { // 账号密码匹配成功
                                     localStorage.setItem('sky_username', self.ruleForm.username) // 保存用户名
-                                    document.cookie = 'sessionId=' + data.data
-                                    // document.session.setAttribute("user", obj)
                                     self.$router.push('/')
                                 } else {
                                     self.$message({

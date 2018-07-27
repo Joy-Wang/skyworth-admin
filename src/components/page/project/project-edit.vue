@@ -4,9 +4,9 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="" @click="cancleAdd()">取 消</el-button>
-                <el-button type="danger" @click="deleteProject()">删 除</el-button>
-                <el-button type="success" @click="saveProject()">保 存</el-button>
-                <el-button type="primary" @click="updateProject()">修 改</el-button>
+                <el-button type="danger" v-if="canEdit" @click="deleteProject()">删 除</el-button>
+                <el-button type="success" v-if="canEdit" @click="saveProject()">保 存</el-button>
+                <el-button type="primary" v-if="canEdit" @click="updateProject()">修 改</el-button>
             </div>
             <!-- 基础信息折叠模块 -->
             <div class="fold-box"><span @click="infoShow = !infoShow"><i :class=" infoShow ? 'el-icon-caret-top' : 'el-icon-caret-bottom' "></i> 基础信息</span></div>
@@ -21,14 +21,14 @@
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="方案名称" class="required-label">
-                                <el-input v-model="projectBaseInfo.toseName" placeholder="请填写方案名称" :maxlength="30"></el-input>
+                                <el-input v-model="projectBaseInfo.toseName" :disabled="canEdit ? false : true" placeholder="请填写方案名称" :maxlength="30"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="6">
                             <el-form-item label="机型" class="required-label">
-                                <el-select v-model="projectBaseInfo.toseEquipmentType" placeholder="请选择机型">
+                                <el-select v-model="projectBaseInfo.toseEquipmentType" :disabled="canEdit ? false : true" placeholder="请选择机型">
                                     <el-option
                                     v-for="item in equipType"
                                     :key="item.codeCode"
@@ -40,7 +40,7 @@
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="机芯" class="required-label">
-                                <el-select v-model="projectBaseInfo.toseEquipmentCore" placeholder="请选择机芯">
+                                <el-select v-model="projectBaseInfo.toseEquipmentCore" :disabled="canEdit ? false : true" placeholder="请选择机芯">
                                     <el-option
                                     v-for="item in equipCore"
                                     :key="item.codeCode"
@@ -54,7 +54,7 @@
                     <el-row>
                         <el-col :span="6">
                             <el-form-item label="国家" class="required-label">
-                                <el-select v-model="projectBaseInfo.toseEquipmentCountry" @change="selectCountry" placeholder="请选择国家">
+                                <el-select v-model="projectBaseInfo.toseEquipmentCountry" :disabled="canEdit ? false : true" @change="selectCountry" placeholder="请选择国家">
                                     <el-option
                                     v-for="item in country"
                                     :key="item.codeCode"
@@ -66,7 +66,7 @@
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="语言">
-                                <el-select v-model="projectBaseInfo.toseLanguage" placeholder="请选择语言">
+                                <el-select v-model="projectBaseInfo.toseLanguage" :disabled="canEdit ? false : true" placeholder="请选择语言">
                                     <el-option
                                     v-for="item in language"
                                     :key="item.codeCode"
@@ -81,6 +81,7 @@
                         <el-col :span="6">
                             <el-form-item label="关联客户">
                                 <el-autocomplete
+                                :disabled="canEdit ? false : true"
                                 popper-class="my-autocomplete"
                                 v-model="projectBaseInfo.toseUnionCust"
                                 :fetch-suggestions="querySearch"
@@ -99,19 +100,19 @@
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="优先级">
-                                <el-input v-model="projectBaseInfo.toseLevel" placeholder="请填写优先级" :maxlength="10"></el-input>
+                                <el-input v-model="projectBaseInfo.toseLevel" :disabled="canEdit ? false : true" placeholder="请填写优先级" :maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="6">
                             <el-form-item label="版本">
-                                <el-input v-model="projectBaseInfo.toseVersion" placeholder="请填写版本" :maxlength="10"></el-input>
+                                <el-input v-model="projectBaseInfo.toseVersion" :disabled="canEdit ? false : true" placeholder="请填写版本" :maxlength="10"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row>
                         <el-form-item label="状态：" class="required-label">
-                            <el-radio v-model="projectBaseInfo.isenable" :label="1">生效</el-radio>
-                            <el-radio v-model="projectBaseInfo.isenable" :label="0">失效</el-radio>
+                            <el-radio v-model="projectBaseInfo.isenable" :disabled="canEdit ? false : true" :label="1">生效</el-radio>
+                            <el-radio v-model="projectBaseInfo.isenable" :disabled="canEdit ? false : true" :label="0">失效</el-radio>
                         </el-form-item>
                     </el-row>
                     <el-row>
@@ -121,6 +122,7 @@
                                 type="textarea"
                                 :maxlength="200"
                                 :autosize="{ minRows: 3, maxRows: 4}"
+                                :disabled="canEdit ? false : true"
                                 placeholder="请输入内容"
                                 v-model="projectBaseInfo.toseRemark">
                                 </el-input>
@@ -139,7 +141,7 @@
                         <el-row :gutter="20">
                             <el-col :span="6">
                                 <el-form-item label="类型">
-                                    <el-select v-model="themeType" placeholder="请选择类型">
+                                    <el-select v-model="themeType" :disabled="canEdit ? false : true" placeholder="请选择类型">
                                         <el-option
                                         v-for="item in themeMode"
                                         :key="item.value"
@@ -150,7 +152,7 @@
                                 </el-form-item>
                             </el-col>
                             <el-col :span="6">
-                                <el-button type="primary" icon="search" @click="reset">还 原</el-button>
+                                <el-button type="primary" icon="search" :disabled="canEdit ? false : true" @click="reset">还 原</el-button>
                             </el-col>
                         </el-row>
                     </el-form>
@@ -167,6 +169,7 @@
                                 </div>
                             </transition-group>
                         </draggable>
+                        <div class="drag-item-flag" v-if="!canEdit"></div>
                     </div>
                     <div class="drag-box-item">
                         <div class="item-title">模块</div>
@@ -177,6 +180,7 @@
                                 </div>
                             </transition-group>
                         </draggable>
+                        <div class="drag-item-flag" v-if="!canEdit"></div>
                     </div>
                 </div>
             </el-collapse-transition>
@@ -252,11 +256,11 @@
                 projectBaseInfo: {
                     toseCode: '',
                     toseName: '',
-                    toseEquipmentCore: 'U5',
-                    toseEquipmentType: '8R92T',
-                    toseEquipmentCountry: 'India',
+                    toseEquipmentCore: '',
+                    toseEquipmentType: '',
+                    toseEquipmentCountry: '',
                     toseLanguage: '',
-                    toseLevel: '1',
+                    toseLevel: '',
                     toseVersion: '',
                     toseUnionCust: '',
                     toseRemark: '',
@@ -363,6 +367,8 @@
                         class: 'size2-1'
                     }
                 ],
+                resList: [],
+                canEdit: false, // 根据状态判断是否可以修改方案
                 idx: -1
             }
         },
@@ -376,12 +382,12 @@
             this.getSelectData('language')
             this.getSelectData('equip_type')
             this.getSelectData('equip_core')
-            this.findSchemeById(this.toseId)
             this.projectBaseInfoNull = this.projectBaseInfo
             this.todo = []
         },
         mounted() {
             this.GetSchemeCustSug()
+            this.findSchemeById(this.toseId)
             this.getProjectData()
         },
         computed: {
@@ -429,14 +435,24 @@
                     url: '/api/scheme/updateScheme',
                     param: parmams,
                     success: function (data) {
+                        // if (data.code == '05') {
+                        //     self.$message({
+                        //         message: data.msg,
+                        //         type: 'error',
+                        //         center: true
+                        //     })
+                        //     eventBus.$emit('todo', '')
+                        //     eventBus.$emit('projectGetList', '')
+                        // }
                         self.$message({
                             message: data.msg,
                             type: 'success',
                             center: true
                         })
-                        self.$router.push({name: 'project'})
+                        // self.$router.push({name: 'project'})
                         eventBus.$emit('todo', '')
-                        eventBus.$emit('projectGetList', '')
+                        // eventBus.$emit('projectGetList', '')
+                        self.$store.dispatch('actionProjectGetList')
                     },
                     error: function (data) {
                         self.$message({
@@ -455,8 +471,20 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.projectBaseInfo = data
-                        self.setModel(data)
+                        self.projectBaseInfo = data.data
+                        if (data.data.toseStatus == 2) {
+                            self.canEdit = true
+                        } else {
+                            self.canEdit = false
+                        }
+                        if (!data.data.toseUnionCustName && data.data.toseUnionCust != '') {
+                            let obj = {}
+                            obj = self.resList.find((item) => {
+                                return item.toseUnionCust == data.data.toseUnionCust
+                            })
+                            // self.projectBaseInfo.toseUnionCust = obj.toseUnionCustName
+                        }
+                        self.setModel(data.data)
                     },
                     error: function (data) {
                         self.$message({
@@ -481,6 +509,7 @@
                         schemeDetail[i].class = obj.class
                         schemeDetail[i].content = baseUrl + schemeDetail[i].tosdRefUrlList[0]
                     }
+                    console.log(schemeDetail)
                     self.todo = schemeDetail
                 }
             },
@@ -503,9 +532,8 @@
                                 type: 'success',
                                 center: true
                             })
-                            self.$router.push({name: 'project'})
                             eventBus.$emit('todo', '')
-                            eventBus.$emit('projectGetList', '')
+                            self.$store.dispatch('actionProjectGetList')
                         },
                         error: function (data) {
                             self.$message({
@@ -526,13 +554,13 @@
                     param: {codeType: type},
                     success: function (data) {
                         if (type == 'country') {
-                            self.country = data
+                            self.country = data.data
                         } else if (type == 'equip_core') {
-                            self.equipCore = data
+                            self.equipCore = data.data
                         } else if (type == 'equip_type') {
-                            self.equipType = data
+                            self.equipType = data.data
                         } else if (type == 'language') {
-                            self.language = data
+                            self.language = data.data
                         }
                     },
                     error: function (data) {
@@ -563,8 +591,8 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.setImg(data)
-                        self.pageQuery.total = data.total
+                        self.setImg(data.data)
+                        self.pageQuery.total = data.data.total
                     },
                     error: function (data) {
                         self.$message({
@@ -644,7 +672,8 @@
                     url: '/api/scheme/GetSchemeCustSug',
                     param: '',
                     success: function (data) {
-                        self.restaurants = data
+                        self.restaurants = data.data
+                        self.resList = data.data
                     },
                     error: function (data) {
                         self.$message({
@@ -665,7 +694,7 @@
             // 清楚筛选
             createFilter(queryString) {
                 return (restaurant) => {
-                return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                return (restaurant.toseUnionCustName.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
                 };
             },
             // 素材管理
@@ -779,6 +808,17 @@
         margin-right: 16px;
         border-radius: 6px;
         border: 1px #e1e4e8 solid;
+        position: relative;
+        .drag-item-flag{
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            background-color: rgba(226,231,242,0.3);
+            cursor: not-allowed
+        }
     }
     .item-title{
         padding: 8px 8px 8px 12px;

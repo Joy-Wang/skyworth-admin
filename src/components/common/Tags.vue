@@ -8,7 +8,7 @@
                 <span class="tags-li-icon" @click="closeTags(index)"><i class="el-icon-close"></i></span>
             </li>
         </ul>
-        <div class="tags-close-box">
+        <!-- <div class="tags-close-box">
             <el-dropdown @command="handleTags">
                 <el-button size="mini" type="primary">
                     标签选项<i class="el-icon-arrow-down el-icon--right"></i>
@@ -18,7 +18,7 @@
                     <el-dropdown-item command="all">关闭所有</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
-        </div>
+        </div> -->
     </div>
 </template>
 
@@ -73,11 +73,27 @@
         computed: {
             showTags() {
                 return this.tagsList.length > 0;
+            },
+            deviceAddClose () {
+                return this.$store.state.deviceAddClose
+            },
+            deviceEditClose () {
+                return this.$store.state.deviceEditClose
             }
         },
         watch:{
             $route(newValue, oldValue){
                 this.setTags(newValue);
+            },
+            deviceAddClose: function (newVal, oldVal) {
+                if (newVal) {
+                    this.closeTags($('.tags-li.active').index())
+                }
+            },
+            deviceEditClose: function (newVal, oldVal) {
+                if (newVal) {
+                    this.closeTags($('.tags-li.active').index())
+                }
             }
         },
         created () {

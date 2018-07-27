@@ -6,7 +6,7 @@
                 <div>
                     <el-form ref="form" label-width="80px">
                         <el-row :gutter="30">
-                            <el-col :span="6">
+                            <el-col :span="8">
                                 <el-form-item label="名称 / 账号">
                                     <el-autocomplete
                                     popper-class="my-autocomplete"
@@ -50,20 +50,20 @@
                 <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                     <el-table-column type="index" label="序号" sortable width="50" header-align="center" align="center">
                     </el-table-column>
-                    <el-table-column prop="tourTypeName" label="用户类型" width="100" header-align="center" align="center">
+                    <el-table-column prop="tourTypeName" label="用户类型" width="100" header-align="center" align="center" show-overflow-tooltip>
                     </el-table-column>
-                    <el-table-column label="账号" width="120" header-align="center">
+                    <el-table-column label="账号" width="120" header-align="center" show-overflow-tooltip>
                         <template slot-scope="scope">
                             <a class="click-name" @click="editInformation(false, scope.row)">{{ scope.row.tourAccount }}</a>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="tourName" label="名称" width="120" header-align="center">
+                    <el-table-column prop="tourName" label="名称" width="120" header-align="center" show-overflow-tooltip>
                     </el-table-column>
-                    <el-table-column prop="tourTelphone" label="电话号码" width="120" header-align="center">
+                    <el-table-column prop="tourTelphone" label="电话号码" width="120" header-align="center" show-overflow-tooltip>
                     </el-table-column>
-                    <el-table-column prop="tourMail" label="邮箱" width="150" header-align="center">
+                    <el-table-column prop="tourMail" label="邮箱" width="150" header-align="center" show-overflow-tooltip>
                     </el-table-column>
-                    <el-table-column prop="tourAddress" label="地址" width="auto" header-align="center">
+                    <el-table-column prop="tourAddress" label="地址" width="auto" header-align="center" show-overflow-tooltip>
                     </el-table-column>
                     <el-table-column label="状态" width="80" header-align="center" align="center">
                         <template slot-scope="scope">
@@ -99,7 +99,7 @@
                     </el-col>
                     <el-col :span="12">
                         <el-form-item label="密码：" v-if="isAdd" class="required-label">
-                            <el-input v-model="ruleForm.tourPassword" placeholder="请填写密码" maxlength="40"></el-input>
+                            <el-input v-model="ruleForm.tourPassword" type="password" placeholder="请填写密码" maxlength="40"></el-input>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -159,7 +159,7 @@
             <span slot="footer" class="dialog-footer">
                 <el-button type="" @click="cancelManage()">取 消</el-button>
                 <el-button v-if="isAdd" type="primary" @click="addUser()">提 交</el-button>
-                <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
+                <el-button v-if="!isAdd" type="primary" @click="updateInfo()">保 存</el-button>
                 <el-button v-if="!isAdd" type="danger" @click="deleteUser()">删 除</el-button>
             </span>
         </el-dialog>
@@ -189,7 +189,7 @@
                 },
                 ruleForm: {
                     isenable: 1,
-                    tourType: '1',
+                    tourType: '',
                     tourAccount: '',
                     tourName: '',
                     tourEnglishName: '',
@@ -263,13 +263,14 @@
             // 获取用户数据
             getData() {
                 let self = this
-                let dataUrl = '/api/user/queryUserList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
+                let dataUrl = process.env.API_HOST + '/user/queryUserList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
                 crud.skyworthGet({
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.tableData = data.list
-                        self.pageQuery.total = data.total
+                        self.tableData = data.data.list
+                        self.pageQuery.total = data.data.total
+                        self.querySearchData()
                     },
                     error: function (data) {
                         self.$message({
@@ -288,10 +289,11 @@
                     self.getData()
                 } else {
                     crud.skyworthGet({
-                        url: '/api/user/queryUserList',
+                        url: process.env.API_HOST + '/user/queryUserList',
                         param: params,
                         success: function (data) {
-                            self.tableData = data.list
+                            self.tableData = data.data.list
+                            self.pageQuery.total = data.data.total
                         },
                         error: function (data) {
                             self.$message({
@@ -310,15 +312,15 @@
                 if ( view ) { // 新增
                     self.ruleForm.isenable = 1
                     self.ruleForm.tourSex = 1
-                    self.ruleForm.tourType = '1'
+                    if (self.userType != '') self.ruleForm.tourType = self.userType[0].codeCode
                     self.isAdd = view
                 } else { // 修改
                     let params = {tourId: data.tourId}
                     crud.skyworthGet({ // 通过id获取当前用户信息
-                        url: '/api/user/findUserById',
+                        url: process.env.API_HOST + '/user/findUserById',
                         param: params,
                         success: function (data) {
-                            self.ruleForm = data
+                            self.ruleForm = data.data
                         },
                         error: function (data) {
                             self.$message({
@@ -426,12 +428,19 @@
                     }
                 }
                 if (!self.ruleForm.tourPassword) {
-                        self.$message({
-                            type: 'warning',
-                            message: '请填写密码',
-                            center: true
-                        })
-                        return false
+                    self.$message({
+                        type: 'warning',
+                        message: '请填写密码',
+                        center: true
+                    })
+                    return false
+                } else if (self.ruleForm.tourPassword.length < 6 ) {
+                    self.$message({
+                        type: 'warning',
+                        message: '请填写6位以上密码',
+                        center: true
+                    })
+                    return false
                 }
                 if (!self.ruleForm.tourName) {
                         self.$message({
@@ -466,13 +475,21 @@
                     url: '/api/user/addUser',
                     param: parmams,
                     success: function (data) {
-                        self.$message({
-                            message: data.msg,
-                            type: 'success',
-                            center: true
-                        })
-                        self.getData()
-                        self.editVisible = false
+                        if (data.code == '0001') {
+                            self.$message({
+                                message: data.msg,
+                                type: 'success',
+                                center: true
+                            })
+                            self.getData()
+                            self.editVisible = false
+                        } else if (data.code == '0404') {
+                            self.$message({
+                                message: data.msg,
+                                type: 'error',
+                                center: true
+                            })
+                        }
                     },
                     error: function (data) {
                         self.$message({
@@ -515,10 +532,10 @@
             getSelectData (type) {
                 let self = this
                 crud.skyworthGet({
-                    url: '/api/public/queryBaseType',
+                    url: process.env.API_HOST + '/public/queryBaseType',
                     param: {codeType: type},
                     success: function (data) {
-                            self.userType = data
+                        self.userType = data.data
                     },
                     error: function (data) {
                         self.$message({
@@ -536,20 +553,19 @@
                 // 调用 callback 返回建议列表的数据
                 cb(results);
             },
-            // 清楚筛选
             createFilter(queryString) {
-                // return (restaurant) => {
-                //     return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-                // };
+                return (restaurant) => {
+                    return (restaurant.tourName.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+                };
             },
             // 模糊搜索数据来源
             querySearchData() {
                 let self = this
                 crud.skyworthGet({
-                    url: '/api/user/queryUserByKey',
+                    url: process.env.API_HOST + '/user/queryUserByKey',
                     param: '',
                     success: function (data) {
-                        self.restaurants = data
+                        self.restaurants = data.data
                     },
                     error: function (data) {
                         self.$message({

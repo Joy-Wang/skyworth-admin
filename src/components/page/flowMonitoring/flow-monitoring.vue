@@ -52,14 +52,14 @@
                         </el-table-column>
                         <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                         </el-table-column>
-                        <el-table-column label="应用名称" header-align="center">
+                        <el-table-column label="应用名称" header-align="center" show-overflow-tooltip>
                             <template slot-scope="scope">
                                 <a>{{ scope.row.toanName }}</a>
                             </template>
                         </el-table-column>
-                        <el-table-column prop="toanTypeName" label="分类" width="80" header-align="center" align="center">
+                        <el-table-column prop="toanTypeName" label="分类" width="80" header-align="center" align="center" show-overflow-tooltip>
                         </el-table-column>
-                        <el-table-column prop="toanLoadTotals" label="下载总量" width="80" header-align="center" align="center">
+                        <el-table-column prop="toanLoadTotals" label="下载总量" width="80" header-align="center" align="center" show-overflow-tooltip>
                         </el-table-column>
                     </el-table>
                 </el-col>
@@ -104,6 +104,12 @@
             select_order_number: '',
             select_orderId: [],
             firstTime: true, // 标识第一次进入
+            pieBox: null,
+            pieEchartContainer: null,
+            pieChart: null,
+            lineBox: null,
+            lineEchartContainer: null,
+            lineChart: null,
             selectionTotal: 0,
             isMonth: true,
             weekList: [],
@@ -115,6 +121,7 @@
         created () {
             this.getData()
             this.getSelectData()
+            this.SetEchartsData()
         },
         mounted() {
             let self = this
@@ -142,7 +149,7 @@
                     url: '/api/public/queryBaseType',
                     param: {codeType: 'app_type'},
                     success: function (data) {
-                        self.appType = data
+                        self.appType = data.data
                     },
                     error: function (data) {
                         self.$message({
@@ -161,10 +168,9 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.tableData = data.list
-                        self.pageQuery.total = data.total
-                        self.selectionTotal = data.total > 10 ? 10 : data.total // 保存多选框第一次选择的数量
-                        // self.SetEchartsData(data)
+                        self.tableData = data.data.list
+                        self.pageQuery.total = data.data.total
+                        self.selectionTotal = data.data.total > 10 ? 10 : data.data.total // 保存多选框第一次选择的数量
                     },
                     error: function (data) {
                         self.$message({
@@ -177,10 +183,8 @@
             },
             // 选择时
             select(selection, row) {
-                // console.log(selection, row)
             },
             selectAll(selection) {
-                console.log('all')
             },
             // 选择项改变
             handleSelectionChange(selection) {
@@ -193,76 +197,70 @@
                 if (self.firstTime && selection.length == self.selectionTotal) { // 第一次
                     let selectNull = selection.length == 0 ? true : false
                     self.queryAppLoadDetails(self.monthAndWeekSaveType, true, selectNull)
-                    self.SetEchartsData(selection, selectNull)
+                    setTimeout(function(){
+                        window.onresize = function () {
+                            self.echartsResize(self.pieBox, self.pieEchartContainer, self.pieChart)
+                            self.echartsResize(self.lineBox, self.lineEchartContainer, self.lineChart)
+                        }
+                    }, 500)
                     self.firstTime = false
                 } else if (!self.firstTime) { // 非第一次
                     let selectNull = selection.length == 0 ? true : false
                     self.queryAppLoadDetails(self.monthAndWeekSaveType, true, selectNull)
-                    self.SetEchartsData(selection, selectNull)
                 }
             },
-            SetEchartsData(data, selectNull) {
+            SetEchartsData(data) {
                 let self = this
                 // 饼状图
-                let pieBox = $('#pieBox')
-                let pieEchartContainer = $('#pieEchartContainer')
-                pieEchartContainer.css('width', pieBox.width()*0.95)
-                pieEchartContainer.css('height', pieBox.height()*0.95)
-                let pieChart = echarts.init(document.getElementById('pieEchartContainer'), 'infographic')
-                if (selectNull) {
-                    let option ={
-                        name: '访问来源',
-                        title: { text: '下载总量饼状图' },
-                        tooltip : {
-                            trigger: 'item',
-                            formatter: "{b} : {c} ({d}%)"
-                        },
-                        type: 'pie',
-                        radius: '55%',
-                        series: [{
-                            name: '点击量',
-                            type: 'pie',
-                            selectedMode: 'single',
-                            data: [{name: '无数据', value: 0}],
-                            itemStyle: {
-                                color: '#333333'
-                            }
-                        }]
-                    }
-                    pieChart.clear()
-                    pieChart.setOption(option, true)
-                    return false
-                }
                 
-                let xAxisLine = []
-                let dataPie = []
-                for (let i = 0; i < data.length; i++) {
-                    let nullPei = {}
-                    nullPei.name = data[i].toanName
-                    nullPei.value = data[i].toanLoadTotals
-                    dataPie.push(nullPei)
-                    xAxisLine.push(nullPei.name)
-                }
-                let option ={
-                    name: '访问来源',
-                    title: { text: '下载总量饼状图' },
-                    tooltip : {
-                        trigger: 'item',
-                        formatter: "{b} : {c} ({d}%)"
+                crud.skyworthGet({
+                    url: '/api/app/queryAppTypePercentList',
+                    param: '',
+                    success: function (data) {
+                        let pieBox = $('#pieBox')
+                        let pieEchartContainer = $('#pieEchartContainer')
+                        pieEchartContainer.css('width', pieBox.width())
+                        pieEchartContainer.css('height', pieBox.height())
+                        let pieChart = echarts.init(document.getElementById('pieEchartContainer'), 'infographic')
+                        self.pieBox = pieBox
+                        self.pieEchartContainer = pieEchartContainer
+                        self.pieChart = pieChart
+
+                        let dataPie = []
+                        for (let i = 0; i < data.data.length; i++) {
+                            let nullPei = {}
+                            nullPei.name = data.data[i].toanTypeName
+                            nullPei.value = data.data[i].loadNum
+                            dataPie.push(nullPei)
+                        }
+                        let option ={
+                            name: '访问来源',
+                            title: { text: '下载总量饼状图' },
+                            tooltip : {
+                                trigger: 'item',
+                                formatter: "{b} : {c} ({d}%)"
+                            },
+                            type: 'pie',
+                            radius: '55%',
+                            series: [{
+                                name: '点击量',
+                                type: 'pie',
+                                selectedMode: 'single',
+                                data: dataPie
+                            }]
+                        }
+                        pieChart.setOption(option, true)
                     },
-                    type: 'pie',
-                    radius: '55%',
-                    series: [{
-                        name: '点击量',
-                        type: 'pie',
-                        selectedMode: 'single',
-                        data: dataPie
-                    }]
-                }
-                pieChart.clear()
-                pieChart.setOption(option, true)
+                    error: function (data) {
+                        self.$message({
+                            message: data.msg,
+                            type: 'error',
+                            center: true
+                        })
+                    }
+                })
             },
-            // 根据ID获取每月点击量信息
+            // 根据ID获取点击量信息
             queryAppLoadDetails(dateType, isCheck, selectNull) {
                 let self = this
                 // 折线图
@@ -271,6 +269,9 @@
                 lineEchartContainer.css('width', lineBox.width())
                 lineEchartContainer.css('height', lineBox.height())
                 let lineChart = echarts.init(document.getElementById('lineEchartContainer'), 'dark')
+                this.lineBox = lineBox
+                this.lineEchartContainer = lineEchartContainer
+                this.lineChart = lineChart
                 let titleText = this.isMonth ? '月下载量折线图' : '周下载量折线图'
                 // lineChart.showLoading()
                 let params = {idx: self.multipleSelectionId.join(',')}
@@ -313,7 +314,7 @@
                         url: '/api/app/queryAppLoadDetailsByMonth',
                         param: params,
                         success: function (data) {
-                            let dataB = data
+                            let dataB = data.data
                             let nameList = []
                             let seriesList = []
                             let monthList = []
@@ -350,12 +351,11 @@
                         url: '/api/app/queryAppLoadDetailsByWeek',
                         param: params,
                         success: function (data) {
-                            let dataB = data
+                            let dataB = data.data
                             let nameList = []
                             let seriesList = []
                             for (let i=0; i<dataB.length; i++) {
                                 let nullSeries = {}
-                                let dataLength = dataB[i].data.length
                                 let oneData = dataB[i].data.map((item) => {return item.tWeek})
                                 let nullData = []
                                 for (let j=0; j<self.weekList.length; j++) {
@@ -405,9 +405,9 @@
                         url: dataUrl,
                         param: params,
                         success: function (data) {
-                            self.tableData = data.list
-                            self.pageQuery.total = data.total
-                            self.selectionTotal = data.total > 10 ? 10 : data.total // 保存多选框第一次选择的数量
+                            self.tableData = data.data.list
+                            self.pageQuery.total = data.data.total
+                            self.selectionTotal = data.data.total > 10 ? 10 : data.data.total // 保存多选框第一次选择的数量
                         },
                         error: function (data) {
                             self.$message({
@@ -439,6 +439,11 @@
                     }
                 }
                 return week.reverse()
+            },
+            echartsResize (box, echartsContainer, echartsName) {
+                echartsContainer.css('width', box.width())
+                echartsContainer.css('height', box.height())
+                echartsName.resize()
             }
         }
     }

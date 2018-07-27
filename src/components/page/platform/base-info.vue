@@ -49,18 +49,18 @@
             <el-table :data="tableData" border stripe style="width: 100%" ref="multipleTable" @selection-change="handleSelectionChange">
                 <el-table-column type="index" label="序号" width="50" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="codeTypeName" label="类型" width="100" header-align="center" align="center">
+                <el-table-column prop="codeTypeName" label="类型" width="100" header-align="center" align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column label="名称" width="200" header-align="center">
+                <el-table-column label="名称" width="200" header-align="center" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <a class="click-name" @click="manageBaseInfo(false, scope.row)">{{ scope.row.codeName }}</a>
                     </template>
                 </el-table-column>
-                <el-table-column prop="codeCode" label="编码" width="150" header-align="center">
+                <el-table-column prop="codeCode" label="编码" width="150" header-align="center" show-overflow-tooltip>
                 </el-table-column>
                 <el-table-column prop="codeSeq" label="排序" width="80" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="codeDesc" label="备注" width="auto" header-align="center">
+                <el-table-column prop="codeDesc" label="备注" width="auto" header-align="center" show-overflow-tooltip>
                 </el-table-column>
                 <el-table-column label="状态" width="80" header-align="center" align="center">
                     <template slot-scope="scope">
@@ -75,11 +75,11 @@
         <el-dialog title="基础信息管理" :visible.sync="manageInfoVisible" width="35%" top="10vh" @close='cancelManage()' class="base-info-dialog" :close-on-click-modal='false'>
             <el-form :model="manageBaseInfoData" label-width="80px">
                 <el-form-item label="编码：" class="required-label">
-                    <el-input v-if="isAdd" v-model="manageBaseInfoData.codeCode" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001" maxlength="20"></el-input>
-                    <el-input v-if="!isAdd" v-model="manageBaseInfoData.codeCode" placeholder="国家简拼 + '-' + 机芯 + 机型 + '-' +4位数字 例：CH-U5-8R92T-0001" maxlength="20"></el-input>
+                    <el-input v-if="isAdd" v-model="manageBaseInfoData.codeCode" placeholder="" maxlength="20"></el-input>
+                    <el-input v-if="!isAdd" v-model="manageBaseInfoData.codeCode" placeholder="" maxlength="20"></el-input>
                 </el-form-item>
                 <el-form-item label="名称：" class="required-label">
-                    <el-input v-model="manageBaseInfoData.codeName" placeholder="国家 + '-' + 品牌名称 例：中国-创维Q5A" maxlength="20"></el-input>
+                    <el-input v-model="manageBaseInfoData.codeName" placeholder="" maxlength="20"></el-input>
                 </el-form-item>
                 <el-form-item label="类型：" class="required-label">
                     <el-row>
@@ -123,7 +123,7 @@
             <span slot="footer" class="dialog-footer">
                 <el-button @click="cancelManage()">取 消</el-button>
                 <el-button v-if="isAdd" type="primary" @click="addBaseInfo()">提 交</el-button>
-                <el-button v-if="!isAdd" type="primary" @click="updateInfo()">提 交</el-button>
+                <el-button v-if="!isAdd" type="primary" @click="updateInfo()">保 存</el-button>
                 <el-button v-if="!isAdd" type="danger" @click="deleteBaseInfo()">删 除</el-button>
             </span>
         </el-dialog>
@@ -154,11 +154,11 @@
                 manageBaseInfoData: {
                     codeCode: '',
                     codeName: '',
-                    codeType: 'base_type',
+                    codeType: '',
                     isenable: 1,
                     codeSeq: '',
                     codeDesc: '',
-                    codeTypeName: 'base_type'
+                    codeTypeName: ''
                 },
                 pageQuery: { // 分页
                     pageNum: 1,
@@ -214,8 +214,8 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.tableData = data.list
-                        self.pageQuery.total = data.total
+                        self.tableData = data.data.list
+                        self.pageQuery.total = data.data.total
                     },
                     error: function (data) {
                         self.$message({
@@ -235,8 +235,8 @@
                         url: dataUrl,
                         param: '',
                         success: function (data) {
-                            self.tableData = data.list
-                            self.pageQuery.total = data.total
+                            self.tableData = data.data.list
+                            self.pageQuery.total = data.data.total
                         },
                         error: function (data) {
                             self.$message({
@@ -256,7 +256,7 @@
                 data ? data : ''
                 if ( view ) { // 新增
                     self.manageBaseInfoData.isenable = 1
-                    self.manageBaseInfoData.codeType = 'base_type'
+                    if (self.infoType != '') self.manageBaseInfoData.codeType = self.infoType[0].codeCode
                     self.isAdd = view
                 } else { // 修改
                     let params = {codeId: data.codeId}
@@ -264,7 +264,7 @@
                         url: '/api/baseinfo/fingParameterById',
                         param: params,
                         success: function (data) {
-                            self.manageBaseInfoData = data
+                            self.manageBaseInfoData = data.data
                         },
                         error: function (data) {
                             self.$message({
@@ -373,7 +373,7 @@
                     url: '/api/public/queryBaseType',
                     param: {codeType: type},
                     success: function (data) {
-                        self.infoType = data
+                        self.infoType = data.data
                     },
                     error: function (data) {
                         self.$message({

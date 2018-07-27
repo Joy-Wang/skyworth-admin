@@ -51,7 +51,7 @@
                 </el-table-column>
                 <el-table-column prop="tomdTypeName" label="素材类型" width="100" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column label="标题名称" width="150" header-align="center">
+                <el-table-column label="标题名称" width="150" header-align="center" show-overflow-tooltip>
                     <template slot-scope="scope">
                         <a class="click-name" @click="findMaterialById(false, scope.row)">{{ scope.row.tomdName }}</a>
                     </template>
@@ -63,9 +63,9 @@
                 </el-table-column>
                 <el-table-column prop="tomdSizeName" label="布局" width="100" header-align="center" align="center">
                 </el-table-column>
-                <el-table-column prop="tomdRemark" label="描述" width="auto" header-align="center">
+                <el-table-column prop="tomdRemark" label="描述" width="auto" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column prop="tomdVersion" label="版本" width="100" header-align="center" align="center">
+                <el-table-column prop="tomdVersion" label="版本" width="100" header-align="center" align="center" show-overflow-tooltip>
                 </el-table-column>
                     <el-table-column label="状态" width="80" header-align="center" align="center">
                         <template slot-scope="scope">
@@ -186,13 +186,13 @@
                 tableData: [],
                 manageBaseInfoData: {
                     tomdType: '1',
-                    tomdTypeName: '图片',
+                    tomdTypeName: '',
                     tomdName: '',
-                    tomdSize: '1',
-                    tomdSizeName: '1x1',
+                    tomdSize: '',
+                    tomdSizeName: '',
                     tomdPosterUrl: '',
-                    tomdClickType: '1',
-                    tomdClickTypeName: '启动应用',
+                    tomdClickType: '',
+                    tomdClickTypeName: '',
                     tomdClick: '',
                     tomdVersion: '',
                     tomdRemark: '',
@@ -245,8 +245,8 @@
                     url: dataUrl,
                     param: '',
                     success: function (data) {
-                        self.setImg(data)
-                        self.pageQuery.total = data.total
+                        self.setImg(data.data)
+                        self.pageQuery.total = data.data.total
 
                     },
                     error: function (data) {
@@ -266,11 +266,11 @@
                     param: {codeType: type},
                     success: function (data) {
                         if (type == 'material_type') {
-                            self.materialType = data
+                            self.materialType = data.data
                         } else if (type == 'material_size') {
-                            self.materialSize = data
+                            self.materialSize = data.data
                         } else if (type == 'material_click') {
-                            self.materialClick = data
+                            self.materialClick = data.data
                         }
                     },
                     error: function (data) {
@@ -293,8 +293,8 @@
                         url: '/api/material/queryMaterialList',
                         param: params,
                         success: function (data) {
-                            self.setImg(data)
-                            self.pageQuery.total = data.total
+                            self.setImg(data.data)
+                            self.pageQuery.total = data.data.total
                         },
                         error: function (data) {
                             self.$message({
@@ -324,12 +324,21 @@
                 let self = this
                 data ? data : ''
                 if ( view ) { // 新增tomdTypeName
-                    self.manageBaseInfoData.tomdType = '1'
-                    self.manageBaseInfoData.tomdTypeName = '图片'
-                    self.manageBaseInfoData.tomdSize = '1'
-                    self.manageBaseInfoData.tomdSizeName = '1x1'
-                    self.manageBaseInfoData.tomdClickType = '1'
-                    self.manageBaseInfoData.tomdClickTypeName = '启动应用'
+                    self.getSelectData('material_type')
+                    self.getSelectData('material_size')
+                    self.getSelectData('material_click')
+                    if (self.materialClick != '') {
+                        self.manageBaseInfoData.tomdClickType = self.materialClick[0].codeCode
+                        self.manageBaseInfoData.tomdClickTypeName = self.materialClick[0].codeName
+                    }
+                    if (self.materialSize != '') {
+                        self.manageBaseInfoData.tomdSize = self.materialSize[0].codeCode
+                        self.manageBaseInfoData.tomdSizeName = self.materialSize[0].codeName
+                    }
+                    if (self.materialType != '') {
+                        self.manageBaseInfoData.tomdType = self.materialType[0].codeCode
+                        self.manageBaseInfoData.tomdTypeName = self.materialType[0].codeName
+                    }
                     self.manageBaseInfoData.isenable = 1
                     self.isAdd = view
                 } else { // 修改
@@ -339,12 +348,12 @@
                         param: params,
                         success: function (data) {
                             if (data.tomdPosterUrl != '') {
-                               self.localImageUrl = self.baseSeverUrl + data.tomdPosterUrl
+                               self.localImageUrl = self.baseSeverUrl + data.data.tomdPosterUrl
                             }
-                            data.tomdTypeName = self.chooseCodeName('tomdType', data.tomdType)
-                            data.tomdSizeName = self.chooseCodeName('tomdSize', data.tomdSize)
-                            data.tomdClickTypeName = self.chooseCodeName('tomdClickType', data.tomdClickType)
-                            self.manageBaseInfoData = data
+                            data.data.tomdTypeName = self.chooseCodeName('tomdType', data.data.tomdType)
+                            data.data.tomdSizeName = self.chooseCodeName('tomdSize', data.data.tomdSize)
+                            data.data.tomdClickTypeName = self.chooseCodeName('tomdClickType', data.data.tomdClickType)
+                            self.manageBaseInfoData = data.data
                         },
                         error: function (data) {
                             self.$message({
@@ -365,6 +374,38 @@
             // 新增素材
             addMaterial () {
                 let self = this
+                if (!this.manageBaseInfoData.tomdName) {
+                    self.$message({
+                        message: '请填写素材名称',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageBaseInfoData.tomdType) {
+                    self.$message({
+                        message: '素材类型不能为空，请前往平台管理-基础数据管理新增素菜类型',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageBaseInfoData.tomdSize) {
+                    self.$message({
+                        message: '布局大小不能为空，请前往平台管理-基础数据管理新增布局大小',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
+                if (!this.manageBaseInfoData.tomdClickType) {
+                    self.$message({
+                        message: '点击事件类型不能为空，请前往平台管理-基础数据管理新增点击事件类型',
+                        type: 'warning',
+                        center: true
+                    })
+                    return false
+                }
                 this.manageBaseInfoData.tomdPosterUrl = this.imageUrl
                 let parmams = this.manageBaseInfoData
                 crud.skyworthComplexSave({
