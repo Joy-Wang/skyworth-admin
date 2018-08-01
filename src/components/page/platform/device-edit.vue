@@ -219,7 +219,7 @@
                 radioAdd: '',
                 radioRowInfo: {},
                 adName: '',
-                baseSeverUrl: this.baseSeverUrl(),
+                baseSeverUrl: process.env.API_BASE_URL,
                 pageQuery: { // 分页
                     pageNum: 1,
                     pageSize: 10,

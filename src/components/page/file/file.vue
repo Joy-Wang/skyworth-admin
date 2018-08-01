@@ -198,7 +198,7 @@
                     tomdRemark: '',
                     isenable: 1
                 },
-                baseSeverUrl: this.baseSeverUrl(),
+                baseSeverUrl: process.env.API_BASE_URL,
                 searchName: '',
                 materialType: [],
                 materialSize: [],

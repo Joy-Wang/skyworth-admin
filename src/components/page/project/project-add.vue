@@ -327,7 +327,7 @@
                     clone: true,
                     disabled: false
                 },
-                baseSeverUrl: this.baseSeverUrl(),
+                baseSeverUrl: process.env.API_BASE_URL,
                 todo: [],
                 doing: [
                     {

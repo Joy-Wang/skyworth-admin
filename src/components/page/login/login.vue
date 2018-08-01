@@ -49,7 +49,7 @@
                         let param = {account: self.ruleForm.username, password: self.ruleForm.password}
                         $.ajax({
                             type: 'post',
-                            url: 'http://54.154.70.52:8080/tvmanage/user/login',
+                            url: '/api/user/login',
                             data: param,
                             success: function (data, status, xhr) {
                                 if (data.code == '0008') { // 账号密码匹配成功

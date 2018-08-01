@@ -151,7 +151,7 @@
                 },
                 toanUrl: '',
                 isApk: true,
-                baseSeverUrl: this.baseSeverUrl(),
+                baseSeverUrl: process.env.API_BASE_URL,
                 searchName: '',
                 manageAdVisible: false,
                 isAdd: true,

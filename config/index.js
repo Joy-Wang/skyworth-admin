@@ -11,17 +11,17 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-        target: 'http://172.20.114.66:8082/tvmanage', // 设置调用的接口域名和端口号,加http
+        target: 'http://', // 设置调用的接口域名和端口号,加http
         changeOrigin: true, // 允许跨域
         pathRewrite: {
           '^/api': '' // 这里理解成用‘/api’代替target里面的地址，后面组件中我们掉接口时直接用api代替 比如调用'http://40.00.100.100:3002/user/add'，直接写‘/api/user/add’即可
         }
       },
-      '/ms':{
-          target: 'https://www.easy-mock.com/mock/592501a391470c0ac1fab128',
-          changeOrigin: true
-      }
-    },
+    //   '/ms':{
+    //       target: 'https://www.easy-mock.com/mock/592501a391470c0ac1fab128',
+    //       changeOrigin: true
+    //   }
+    // },
     // Various Dev Server settings
     host: '0.0.0.0', // can be overwritten by process.env.HOST
     port: 8082, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
@@ -81,4 +81,5 @@ module.exports = {
     // Set to `true` or `false` to always turn it on or off
     bundleAnalyzerReport: process.env.npm_config_report
   }
+}
 }

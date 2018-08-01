@@ -375,7 +375,7 @@
                 appType: [], // APP类型
                 toanUrl: '',
                 isApk: true,
-                baseSeverUrl: this.baseSeverUrl(),
+                baseSeverUrl: process.env.API_BASE_URL,
                 searchName: '',
                 searchType: '',
                 manageAppVisible: false,

@@ -55,7 +55,7 @@ export const skyworthSave = (obj) => {
     data: param,
     // async: async,
     dataType: dataType,
-    crossDomain: true,
+    // crossDomain: true,
     xhrFields: {withCredentials: true},
     success: function (data) {
       // loading && Indicator.close() // 关闭loading
@@ -96,8 +96,8 @@ export const skyworthComplexSave = (obj) => {
     data: JSON.stringify(param),
     // async: async,
     dataType: dataType,
-    crossDomain: true,
-    xhrFields: {withCredentials: true},
+    // crossDomain: true, 
+    xhrFields:{withCredentials: true},
     contentType: 'application/json',
     success: function (data) {
       // loading && Indicator.close() // 关闭loading
@@ -137,7 +137,7 @@ export const skyworthQuery = (obj) => {
     data: param,
     // async: async,
     dataType: dataType,
-    crossDomain: true,
+    // crossDomain: true,
     xhrFields: {withCredentials: true},
     success: function (data) {
       success(data)
@@ -178,7 +178,7 @@ export const skyworthComplexQuery = (obj) => {
     data: JSON.stringify(param),
     // async: async,
     dataType: dataType,
-    crossDomain: true,
+    // crossDomain: true,
     xhrFields: {withCredentials: true},
     contentType: 'application/json',
     success: function (data) {
@@ -219,7 +219,7 @@ export const skyworthDelete = (obj) => {
     data: param,
     // async: async,
     dataType: dataType,
-    crossDomain: true,
+    // crossDomain: true,
     xhrFields: {withCredentials: true},
     success: function (data) {
       success(data)
@@ -260,7 +260,7 @@ export const skyworthComplexDelete = (obj) => {
     data: JSON.stringify(param),
     // async: async,
     dataType: dataType,
-    crossDomain: true,
+    // crossDomain: true,
     xhrFields: {withCredentials: true},
     contentType: 'application/json',
     success: function (data) {

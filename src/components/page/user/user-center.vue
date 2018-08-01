@@ -218,7 +218,6 @@
         },
         created() {
             this.getData()
-            console.log(this.$route)
         },
         mounted() {
             this.querySearchData()
@@ -263,7 +262,7 @@
             // 获取用户数据
             getData() {
                 let self = this
-                let dataUrl = process.env.API_HOST + '/user/queryUserList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
+                let dataUrl = '/api/user/queryUserList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
                 crud.skyworthGet({
                     url: dataUrl,
                     param: '',
@@ -289,7 +288,7 @@
                     self.getData()
                 } else {
                     crud.skyworthGet({
-                        url: process.env.API_HOST + '/user/queryUserList',
+                        url: '/api/user/queryUserList',
                         param: params,
                         success: function (data) {
                             self.tableData = data.data.list
@@ -317,7 +316,7 @@
                 } else { // 修改
                     let params = {tourId: data.tourId}
                     crud.skyworthGet({ // 通过id获取当前用户信息
-                        url: process.env.API_HOST + '/user/findUserById',
+                        url: '/api/user/findUserById',
                         param: params,
                         success: function (data) {
                             self.ruleForm = data.data
@@ -532,7 +531,7 @@
             getSelectData (type) {
                 let self = this
                 crud.skyworthGet({
-                    url: process.env.API_HOST + '/public/queryBaseType',
+                    url: '/api/public/queryBaseType',
                     param: {codeType: type},
                     success: function (data) {
                         self.userType = data.data
@@ -562,7 +561,7 @@
             querySearchData() {
                 let self = this
                 crud.skyworthGet({
-                    url: process.env.API_HOST + '/user/queryUserByKey',
+                    url: '/api/user/queryUserByKey',
                     param: '',
                     success: function (data) {
                         self.restaurants = data.data
