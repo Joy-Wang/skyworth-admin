@@ -289,8 +289,9 @@
                 if (self.searchType == '' && self.searchName == '') {
                     self.getData()
                 } else {
+                    let dataUrl = '/api/material/queryMaterialList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
                     crud.skyworthGet({
-                        url: '/api/material/queryMaterialList',
+                        url: dataUrl,
                         param: params,
                         success: function (data) {
                             self.setImg(data.data)

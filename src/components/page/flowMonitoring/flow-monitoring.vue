@@ -331,11 +331,11 @@
                                 nameList.push(dataB[i].name)
                             }
                             monthList.push(dataB[0].data.map((item) => {return item.tMonth}))
-                            option.legend.data = nameList
-                            option.xAxis.data = monthList[0]
-                            option.series = seriesList
-                            lineChart.clear()
-                            lineChart.setOption(option, true)
+                            option.legend.data = nameList // 项目名称
+                            option.xAxis.data = monthList[0] // X轴
+                            option.series = seriesList // 数据
+                            lineChart.clear() // 清除图表
+                            lineChart.setOption(option, true) // 重新生成图表
                         },
                         error: function (data) {
                             self.$message({

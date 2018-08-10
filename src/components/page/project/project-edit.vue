@@ -500,17 +500,19 @@
                 let self = this
                 let schemeDetail = data.schemeDetail
                 let baseUrl = self.baseSeverUrl
-                if (schemeDetail[0].tosdModelId != 0) {
-                    for (let i = 0; i < schemeDetail.length; i ++) {
-                        let obj = {};
-                        obj = self.typeFileter.find((item)=>{
-                            return item.tosdModelId == schemeDetail[i].tosdModelId;
-                        })
-                        schemeDetail[i].class = obj.class
-                        schemeDetail[i].content = baseUrl + schemeDetail[i].tosdRefUrlList[0]
+                if (schemeDetail.length > 0) {
+                    if(schemeDetail[0].tosdModelId != 0) {
+                        for (let i = 0; i < schemeDetail.length; i ++) {
+                            let obj = {};
+                            obj = self.typeFileter.find((item)=>{
+                                return item.tosdModelId == schemeDetail[i].tosdModelId;
+                            })
+                            schemeDetail[i].class = obj.class
+                            schemeDetail[i].content = baseUrl + schemeDetail[i].tosdRefUrlList[0]
+                        }
+                        console.log(schemeDetail)
+                        self.todo = schemeDetail
                     }
-                    console.log(schemeDetail)
-                    self.todo = schemeDetail
                 }
             },
             // 取消

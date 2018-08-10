@@ -375,6 +375,7 @@
                 if (this.searchName == '' && this.UCountry == '') {
                     self.getData()
                 } else {
+                    let dataUrl = '/api/equip/queryEquipList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize                                    
                     crud.skyworthGet({
                         url: '/api/equip/queryEquipList',
                         param: params,

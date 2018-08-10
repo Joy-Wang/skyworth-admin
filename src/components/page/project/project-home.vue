@@ -278,6 +278,7 @@
                 if (self.toseCode == '' && self.searchName == '' && self.searchCust == '') {
                     self.getData()
                 } else {
+                    let dataUrl = '/api/scheme/querySchemeList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize                    
                     crud.skyworthGet({
                         url: '/api/scheme/querySchemeList',
                         param: params,

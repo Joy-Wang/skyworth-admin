@@ -74,7 +74,7 @@
                 </el-table-column>
                 <el-table-column prop="toanRemark" label="描述" width="auto" header-align="center" show-overflow-tooltip>
                 </el-table-column>
-                <el-table-column label="审核状态" width="80" header-align="center" align="center">
+                <el-table-column label="审核状态" width="90" header-align="center" align="center">
                     <template slot-scope="scope">
                         <span v-if="scope.row.toanStatus == 1" class="sky-yellow">待审核</span>
                         <span v-else-if="scope.row.toanStatus == 2" class="sky-blue">审核中</span>
@@ -472,8 +472,9 @@
                 if (self.searchType == '' && self.searchName == '') {
                     self.getData()
                 } else {
+                    let dataUrl = '/api/app/queryApplicationList?pageNum=' + this.pageQuery.pageNum + '&pageSize=' + this.pageQuery.pageSize
                     crud.skyworthGet({
-                        url: '/api/app/queryApplicationList',
+                        url: dataUrl,
                         param: params,
                         success: function (data) {
                             self.setImg(data.data)
@@ -515,6 +516,40 @@
             queryApplicationById (view, data) {
                 let self = this
                 data ? data : ''
+                this.manageAppInfo = {
+                    toanId: '',
+                    toanType: '',
+                    toanIcon: '',
+                    toanName: '',
+                    toanPosterFirst: '',
+                    toanPosterSecond: '',
+                    toanPosterThird: '',
+                    toanEquipmentCore: '',
+                    toanEquipmentType: '',
+                    toanEquipmentCountry: '',
+                    toanLanguage: '',
+                    toanDeveloper: '',
+                    toanSize: 0,
+                    toanAgeGrading: '',
+                    toanVersion: '',
+                    toanScore: '',
+                    toanLoadTotals: 0,
+                    toanRemark: '',
+                    toanUrl: '',
+                    toanStatus: 1,
+                    isenable: 1,
+                    applicationLoad: [{
+                        toalLoadNum: 0,
+                        toalMonth: 0,
+                        toalWeek: 0,
+                        toalYear: 0
+                    }]
+                },
+                this.getSelectData('app_type')
+                this.getSelectData('country')
+                this.getSelectData('language')
+                this.getSelectData('equip_type')
+                this.getSelectData('equip_core')
                 if ( view ) { // 新增
                     if (self.appType != '') {
                         self.manageAppInfo.toanType = self.appType[0].codeCode
